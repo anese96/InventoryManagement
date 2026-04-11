@@ -8,8 +8,9 @@ namespace InventoryManagement.Data.DTO
     /// </summary>
     public class ReferentielDto
     {
-        [FormControl(FormControlType.ReadOnly)]
-        [FormLabel("Id")]
+        //[FormControl(FormControlType.ReadOnly)]
+      //  [FormLabel("Id")]
+        [FormSkip]
         public int Id { get; set; }
 
         [Required]

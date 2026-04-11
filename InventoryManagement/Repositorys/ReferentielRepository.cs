@@ -74,7 +74,7 @@ namespace InventoryManagement.Repositorys
         }
 
         private static ReferentielDto ToDto(BaseEntity e)
-            => new ReferentielDto { Id = e.Id, Name = ((BaseEntity)e).Name };
+            => new ReferentielDto { Name = ((BaseEntity)e).Name };
 
         // ── IRepository<ReferentielDto> ───────────────────────────────────────
 

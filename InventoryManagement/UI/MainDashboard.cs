@@ -111,26 +111,26 @@ namespace InventoryManagement.UI
 
                     var listForm = new GenericListForm<InventoryManagement.Data.DTO.ReferentielDto>(data, null, "Gestion des " + title);
                     
-                    listForm.OnAdd += (dto) => {
+                    listForm.OnAdd += async (dto) => {
                         try {
-                            repo.Insert(dto).GetAwaiter().GetResult();
+                              repo.Insert(dto);
                             // Optional: Reload list to get IDs if needed
                         } catch(Exception ex) {
                             MessageBox.Show("Erreur lors de l'ajout : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     };
 
-                    listForm.OnEdit += (dto) => {
+                    listForm.OnEdit += async (dto) => {
                         try {
-                            repo.Update(dto, dto.Id).GetAwaiter().GetResult();
+                            repo.Update(dto, dto.Id);
                         } catch(Exception ex) {
                             MessageBox.Show("Erreur lors de la modification : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     };
 
-                    listForm.OnDelete += (dto) => {
+                    listForm.OnDelete +=  (dto) => {
                         try {
-                            repo.Delete(dto.Id).GetAwaiter().GetResult();
+                            repo.Delete(dto.Id);
                             return true;
                         } catch(Exception ex) {
                             MessageBox.Show("Erreur lors de la suppression : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);

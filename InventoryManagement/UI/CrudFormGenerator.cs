@@ -105,6 +105,7 @@ namespace InventoryManagement.UI
             int colCount = twoColumns ? 2 : 1;
             int formWidth = twoColumns ? 900 : 500;
             int formHeight = Math.Max(col0.Count, col1.Count) * 48 + 200;
+
             formHeight = Math.Max(formHeight, 300);
 
             var form = new Form

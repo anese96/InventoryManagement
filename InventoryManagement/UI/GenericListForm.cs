@@ -56,7 +56,7 @@ namespace InventoryManagement.UI
             Text            = _entityTitle;
             Size            = new Size(1000, 620);
             StartPosition   = FormStartPosition.CenterParent;
-            MinimumSize     = new Size(600, 400);
+            MinimumSize     = new Size(600, 800);
             BackColor       = Color.White;
 
             var mainLayout = new TableLayoutPanel
