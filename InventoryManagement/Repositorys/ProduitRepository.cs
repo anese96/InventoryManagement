@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Data;
+using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Entity;
 using InventoryManagement.Data.Models;
@@ -17,35 +17,37 @@ namespace InventoryManagement.Repositorys
         private readonly AppDbContext _appContext;
         private readonly AddEntityBD _addEntityBD;
 
-        public ProduitRepository(AppDbContext appDbContext , AddEntityBD addEntityBD )
+        public ProduitRepository(AppDbContext appDbContext, AddEntityBD addEntityBD)
         {
-            _appContext=appDbContext;
+            _appContext = appDbContext;
             _addEntityBD = addEntityBD;
         }
 
-        public Task Insert(ProduitDto entity)
+        public async Task Insert(ProduitDto entity)
         {
-           var produit = new Product
+            var produit = new Product
             {
-               CreationTime = _addEntityBD.ECreationTime(),
-               CreatorId = _addEntityBD.ECreatorId(),
+                CreationTime = _addEntityBD.ECreationTime(),
+                CreatorId = _addEntityBD.ECreatorId(),
+                RefProduct = entity.RefProduct,
+                Designation = entity.Designation,
+                CategoryId = entity.CategoryId,
+                Taxe = entity.Taxe,
+                BarCode = entity.BarCode,
+                PurchasePrice = entity.PurchasePrice,
+                SalesPrice = entity.SalesPrice,
+                StockQuantity = entity.StockQuantity,
+                QtyAlert = entity.QtyAlert,
+                UnitId = entity.UnitId,
+                Colisage = entity.Colisage,
+                MarqueId = entity.MarqueId,
+                NatureId = entity.NatureId
 
-               RefProduct = entity.RefProduct,
-               Designation = entity.Designation,
-                CategoryId= entity.CategoryId,          
-               Taxe = entity.Taxe,
-               BarCode = entity.BarCode,
-               PurchasePrice = entity.PurchasePrice,
-               SalesPrice = entity.SalesPrice,
-               StockQuantity = entity.StockQuantity,
-               QtyAlert = entity.QtyAlert,
-               UnitId = entity.UnitId,
-               Colisage = entity.Colisage,
-               MarqueId = entity.MarqueId
-
-           };
-            _appContext.Products.Add(produit);
-            return _appContext.SaveChangesAsync();
+            };
+            await _appContext.Products.AddAsync(produit);
+            await _appContext.SaveChangesAsync();
+            entity.Id = produit.Id;
+          
         }
         public Task Delete(int id)
         {
@@ -57,13 +59,54 @@ namespace InventoryManagement.Repositorys
             throw new NotImplementedException();
         }
 
-        public Task<ProduitDto> GetById(int id)
+        public async Task<ProduitDto> GetById(int Id)
         {
-            throw new NotImplementedException();
+            var produit = await _appContext.Products.FindAsync(Id);
+            if (produit == null)
+            {
+                throw new ArgumentException("Produit not found.");
+            }
+            return new ProduitDto
+            {
+                RefProduct = produit.RefProduct,
+                Designation = produit.Designation,
+                CategoryId = produit.CategoryId,
+                Taxe = produit.Taxe,
+                BarCode = produit.BarCode,
+                PurchasePrice = produit.PurchasePrice,
+                SalesPrice = produit.SalesPrice,
+                StockQuantity = produit.StockQuantity,
+                QtyAlert = produit.QtyAlert,
+                UnitId = produit.UnitId,
+                Colisage = produit.Colisage,
+                MarqueId = produit.MarqueId,
+                NatureId = produit.NatureId,
+            };
         }
-        public Task Update(ProduitDto entity, int Id)
+        public async Task Update(ProduitDto entity, int Id)
         {
-            throw new NotImplementedException();
+            var produit = await _appContext.Products.FindAsync(Id);
+            if (produit == null)
+            {
+                throw new ArgumentException("Produit not found.");
+            }
+            produit.LastModificationTime = _addEntityBD.ECreationTime();
+            produit.RefProduct = entity.RefProduct;
+            produit.Designation = entity.Designation;
+            produit.BarCode = entity.BarCode;
+            produit.CategoryId = entity.CategoryId;
+            produit.Colisage = entity.Colisage;
+            produit.MarqueId = entity.MarqueId;
+            produit.NatureId = entity.NatureId;
+            produit.PurchasePrice = entity.PurchasePrice;
+            produit.SalesPrice = entity.SalesPrice;
+            produit.StockQuantity = entity.StockQuantity;
+            produit.QtyAlert = entity.QtyAlert;
+            produit.Taxe = entity.Taxe;
+            produit.UnitId = entity.UnitId;
+            await _appContext.SaveChangesAsync();
         }
+
+
     }
 }

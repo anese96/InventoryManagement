@@ -109,11 +109,7 @@ namespace InventoryManagement.UI
             }
             return 0;
         }
-        //public void BtnCancel_Click(object sender, EventArgs e)
-        //{
-        //    this.DialogResult = DialogResult.Cancel;
-        //    this.Close();
-        //}
+     
 
         public string GenerateBarcode()
         {
@@ -123,7 +119,8 @@ namespace InventoryManagement.UI
 
         internal void BtnCancel_Click(object? sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Form form = (sender as Control)?.FindForm();
+            form?.Close();
         }
     }
 }

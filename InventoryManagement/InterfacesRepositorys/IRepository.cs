@@ -12,7 +12,7 @@ namespace InventoryManagement.InterfacesRepositorys
         Task Insert(TEntity entity);
         Task Update(TEntity entity, int Id);
         Task Delete(int id);
-        Task<TEntity> GetById(int id);
+        Task<TEntity> GetById(int Id);
         Task<List<TEntity>> GetAll();
     }
 }

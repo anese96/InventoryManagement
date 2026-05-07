@@ -1,5 +1,6 @@
 ﻿using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Entity;
+using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesRepositorys;
 using InventoryManagement.InterfacesServices;
 using System;
@@ -20,15 +21,16 @@ namespace InventoryManagement.Services
             _repository = repository;
            
         }
-        public Task AddAsync(ProduitDto entity)
+        public async  Task AddAsync(ProduitDto entity)
         {
             // Validate required fields
-            if ( entity.RefProduct==""|| entity.Designation == "" || entity.Taxe=="" || entity.SalesPrice == null || entity.SalesPrice < 0 || entity.StockQuantity==null)
+            if (entity.RefProduct == null || entity.Designation == null || entity.Taxe == null || entity.SalesPrice == null || entity.SalesPrice < 0 || entity.PurchasePrice == null || entity.PurchasePrice < 0 || entity.StockQuantity == null || entity.StockQuantity < 0 || entity.QtyAlert < 0)
             {
-                return Task.FromException(new ArgumentException("Un Champ Vide."));
+                throw new ArgumentException("Un Champ Vide.");
             }
          
-            return _repository.Insert(entity);
+            await  _repository.Insert(entity);
+           
         }
 
         public Task DeleteAsynct(int id)
@@ -36,25 +38,30 @@ namespace InventoryManagement.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<ProduitDto>> GetAllAsyncs()
+        public async Task<List<ProduitDto>> GetAllAsyncs()
         {
-            throw new NotImplementedException();
+           return await _repository.GetAll();
         }
 
-        public Task<ProduitDto> GetAsyncById(int id)
+        public async Task<ProduitDto> GetAsyncById(int id)
         {
-            throw new NotImplementedException();
+            if(id == null) 
+                throw new ArgumentException("ID null.");
+
+            return await _repository.GetById(id);
         }
 
-        public Task UpdateAsync(ProduitDto entity , int Id )
+        public async Task UpdateAsync(ProduitDto entity , int Id )
         {
             // Validate required fields
-            if (entity.RefProduct == null || entity.Designation == null || entity.Taxe == null || entity.SalesPrice == null || entity.SalesPrice < 0 || entity.StockQuantity == null)
+            if (entity.RefProduct == null || entity.Designation == null || entity.Taxe == null || entity.SalesPrice == null || entity.SalesPrice < 0 || entity.PurchasePrice == null || entity.PurchasePrice < 0 || entity.StockQuantity == null || entity.StockQuantity < 0 || entity.QtyAlert < 0)
             {
-                return Task.FromException(new ArgumentException("Un Champ Vide."));
+                throw new ArgumentException("Un Champ Vide.");
             }
 
-            return _repository.Update(entity, Id);
+            await _repository.Update(entity, Id);
         }
+
+
     }
 }

@@ -36,10 +36,14 @@ namespace InventoryManagement.Data.Models
 
         [ForeignKey(nameof(Marque))]
         public int? MarqueId { get; set; }
+
+        [ForeignKey(nameof(Nature))]
+        public int? NatureId { get; set; }
         public Category Category { get; set; }
 
         public Unit Unit { get; set; }
         public Marque Marque { get; set; }
+        public Nature Nature { get; set; }
         public List<PriceLists> PriceLists { get; set; }
     }
 }

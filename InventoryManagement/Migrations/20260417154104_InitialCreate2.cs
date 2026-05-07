@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace InventoryManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDatabase : Migration
+    public partial class InitialCreate2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,9 +15,9 @@ namespace InventoryManagement.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -28,9 +28,9 @@ namespace InventoryManagement.Migrations
                 name: "Marques",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,12 +38,25 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Natures",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Natures", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Units",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -54,27 +67,27 @@ namespace InventoryManagement.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RefProduct = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Designation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: true),
-                    Taxe = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PurchasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    SalesPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    StockQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    QtyAlert = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    UnitId = table.Column<int>(type: "int", nullable: true),
-                    Colisage = table.Column<int>(type: "int", nullable: true),
-                    MarqueId = table.Column<int>(type: "int", nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<int>(type: "int", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeleterId = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    RefProduct = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Designation = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    CategoryId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Taxe = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    BarCode = table.Column<string>(type: "TEXT", nullable: true),
+                    PurchasePrice = table.Column<decimal>(type: "TEXT", nullable: true),
+                    SalesPrice = table.Column<decimal>(type: "TEXT", nullable: true),
+                    StockQuantity = table.Column<decimal>(type: "TEXT", nullable: true),
+                    QtyAlert = table.Column<decimal>(type: "TEXT", nullable: true),
+                    UnitId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Colisage = table.Column<int>(type: "INTEGER", nullable: true),
+                    MarqueId = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<int>(type: "INTEGER", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<int>(type: "INTEGER", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
+                    DeletionTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DeleterId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -100,11 +113,11 @@ namespace InventoryManagement.Migrations
                 name: "PriceLists",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ProductId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Price = table.Column<decimal>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -141,6 +154,9 @@ namespace InventoryManagement.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Natures");
+
             migrationBuilder.DropTable(
                 name: "PriceLists");
 

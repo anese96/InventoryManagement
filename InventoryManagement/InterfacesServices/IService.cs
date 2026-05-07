@@ -1,4 +1,5 @@
-﻿using InventoryManagement.Data.Entity;
+﻿using InventoryManagement.Data.DTO;
+using InventoryManagement.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,6 @@ namespace InventoryManagement.InterfacesServices
         Task DeleteAsynct(int id);
         Task<TEntity> GetAsyncById(int id);
         Task<List<TEntity>> GetAllAsyncs();
+      
     }
 }

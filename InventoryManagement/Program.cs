@@ -3,12 +3,16 @@ using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Entity;
 using InventoryManagement.InterfacesRepositorys;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Logger;
 using InventoryManagement.Repositorys;
 using InventoryManagement.Services;
 using InventoryManagement.UI;
+using InventoryManagement.UI.Client;
+using InventoryManagement.UI.Fournisseur;
 using InventoryManagement.UI.Produit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Configuration;
 using System.Windows.Forms.Design;
 
@@ -27,39 +31,57 @@ namespace InventoryManagement
            
             var services = new ServiceCollection();
 
-            var connectionString = ConfigurationManager
-             .ConnectionStrings["InventoryDbConnection"]
-             .ConnectionString;
+            //var connectionString = ConfigurationManager
+            // .ConnectionStrings["InventoryDbConnection"]
+            // .ConnectionString;
 
+            //services.AddDbContext<AppDbContext>(options =>
+            //options.UseSqlServer(connectionString));
             services.AddDbContext<AppDbContext>(options =>
-       options.UseSqlServer(connectionString));
-
+    options.UseSqlite("Data Source=InventoryManagement.db"));
 
             services.AddScoped<AddEntityBD>();
             services.AddScoped<IRepository<ProduitDto>, ProduitRepository>();
             services.AddScoped<IService<ProduitDto>, ProduitService>();
 
+            services.AddScoped<IRepository<ClientDto>, ClientRepository>();
+            services.AddScoped<IService<ClientDto>, ClientService>();
+
+            services.AddScoped<IRepository<VendorDto>,VendorRepository>();
+            services.AddScoped<IService<VendorDto>, VendorService>();
+
        
 
-            services.AddTransient<AjouterProduit>(); // ﬂ· „—… ÃœÌœ
-            services.AddTransient<MainDashboard>(); // ﬂ· „—… ÃœÌœ
+            services.AddTransient<AjouterProduit>();
+            services.AddTransient<AjouterClient>();
+            services.AddTransient<AjouterFournisseur>();
 
-            services.AddSingleton<FunctionUI>(); // Ê«Õœ ›ﬁÿ
-            services.AddSingleton<IFormManager , FormFactory>(); //Ê«Õœ ›ﬁÿ
+            services.AddTransient<MainDashboard>(); 
+            services.AddTransient<ModifierProduit>(); 
+            services.AddTransient<ModifierClient>(); 
 
-           
+            services.AddSingleton<FunctionUI>();
+            services.AddSingleton<IFormManager , FormFactory>();
+            
+         
 
+            Application.ThreadException += static (sender, e) =>
+            {
+                ErrorLogger.Log("Erreur UI: " + e.Exception.ToString());
+            };
 
-            ServiceProvider = services.BuildServiceProvider();
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                ErrorLogger.Log("Erreur critique: " + e.ExceptionObject.ToString());
+            };
 
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            ServiceProvider = services.BuildServiceProvider();  
             ApplicationConfiguration.Initialize();
-           // Application.Run(new Form1());
             Application.Run(ServiceProvider.GetRequiredService<MainDashboard>());
 
-            //Application.EnableVisualStyles();
-            //Application.Run(new MainForm());
 
         }
     }

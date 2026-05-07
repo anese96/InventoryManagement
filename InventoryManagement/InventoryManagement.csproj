@@ -14,12 +14,19 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UI\RetourAchat\" />
+    <Folder Include="UI\RetourVente\" />
   </ItemGroup>
 
 </Project>

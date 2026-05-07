@@ -12,11 +12,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using InventoryManagement.UI.Client;
+using InventoryManagement.UI.Fournisseur;
+using InventoryManagement.UI.Vente;
+using InventoryManagement.UI.VentesComptoir;
+using InventoryManagement.UI.Achat;
 
 namespace InventoryManagement.UI
 {
     public partial class MainDashboard : Form
     {
+       
+        private Button currentActiveButton;
         private readonly IFormManager _formFactory;
         private Panel currentFormPanel;
         public MainDashboard(IFormManager formFactory)
@@ -85,7 +92,7 @@ namespace InventoryManagement.UI
                 Panel card = CreateDashboardCard(
                     t.Name,
                     t.Icon,
-                    "Gérer les " + t.Name.ToLower(),
+                    " " + t.Name.ToLower(),
                     t.Color,
                     new Point(x, startY),
                     new Size(cardWidth, cardHeight),
@@ -146,9 +153,53 @@ namespace InventoryManagement.UI
                 MessageBox.Show("Erreur d'ouverture : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void SetActiveButton(Button button)
+        {
+            // Reset previous active button
+            if (currentActiveButton != null)
+            {
+                currentActiveButton.BackColor = Color.FromArgb(52, 73, 94);
+                currentActiveButton.ForeColor = Color.White;
+            }
+
+            // Set new active button
+            currentActiveButton = button;
+            if (currentActiveButton != null)
+            {
+                currentActiveButton.BackColor = Color.FromArgb(41, 128, 185);
+                currentActiveButton.ForeColor = Color.White;
+            }
+        }
+
+        private void LoadFormInPanel(Form form)
+        {
+            // Clear current content
+            if (currentFormPanel != null)
+            {
+                mainContentPanel.Controls.Remove(currentFormPanel);
+                currentFormPanel.Dispose();
+            }
+
+            // Create new panel for form
+            currentFormPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(240, 244, 248)
+            };
+
+            // Configure and add form
+            form.TopLevel = false;
+            form.FormBorderStyle = FormBorderStyle.None;
+            form.Dock = DockStyle.Fill;
+            currentFormPanel.Controls.Add(form);
+            form.Show();
+
+            mainContentPanel.Controls.Add(currentFormPanel);
+        }
         private void BtnProducts_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            SetActiveButton(btnProducts);
+            LoadFormInPanel(new ListeProduits(_formFactory));
         }
         private void BtnCategories_Click(object sender, EventArgs e)
         {
@@ -188,7 +239,8 @@ namespace InventoryManagement.UI
         }
         private void BtnClients_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            SetActiveButton(btnClients);
+            LoadFormInPanel(new ListeClient(_formFactory));
         }
         private void BtnDashboard_Click(object sender, EventArgs e)
         {
@@ -310,15 +362,15 @@ namespace InventoryManagement.UI
             };
             parentPanel.Controls.Add(sectionLabel);
 
-            // Definitions of actions
+            // Definitions of actions ListButton
             var actions = new[]
             {
                 new { Name = "➕ Ajouter un Produit", Color = Color.FromArgb(52, 152, 219), Action = (Action)(() => _formFactory.Open<AjouterProduit>()   ) },
-                new { Name = "➕ Ajouter Client", Color = Color.FromArgb(46, 204, 113), Action = (Action)(() => CrudFormGenerator.ShowAddForm<BaseDto>()) },
-                //new { Name = "➕ Ajouter Fournisseur", Color = Color.FromArgb(230, 126, 34), Action = (Action)(() => OpenDialog(new Produit.AjouterProduit())) },
-                //new { Name = "💰 Ajouter Vente", Color = Color.FromArgb(155, 89, 182), Action = (Action)(() => OpenDialog(new Produit.AjouterProduit())) },
-                //new { Name = "🏪 Vente Comptoir", Color = Color.FromArgb(231, 76, 60), Action = (Action)(() => OpenDialog(new Produit.AjouterProduit())) },
-                //new { Name = "🛒 Ajouter Achat", Color = Color.FromArgb(243, 156, 18), Action = (Action)(() => OpenDialog( new Produit.AjouterProduit())) }
+                new { Name = "➕ Ajouter Client", Color = Color.FromArgb(46, 204, 113), Action = (Action)(() => _formFactory.Open<AjouterClient>() ) },
+                new { Name = "➕ Ajouter Fournisseur", Color = Color.FromArgb(230, 126, 34), Action = (Action)(() =>_formFactory.Open<AjouterFournisseur>() ) },
+                new { Name = "💰 Ajouter Vente", Color = Color.FromArgb(155, 89, 182), Action = (Action)(() => _formFactory.Open<AjouterVente>()) },
+                new { Name = "🏪 Vente Comptoir", Color = Color.FromArgb(231, 76, 60), Action = (Action)(() => _formFactory.Open<AjouterVentesComptoir>()) },
+                new { Name = "🛒 Ajouter Achat", Color = Color.FromArgb(243, 156, 18), Action = (Action)(() =>_formFactory.Open<AjouterAchat>()) }
             };
 
             for (int i = 0; i < actions.Length; i++)
@@ -391,10 +443,10 @@ namespace InventoryManagement.UI
             Label valueLabel = new Label
             {
                 Text = value,
-                Font = new Font("Segoe UI", 36, FontStyle.Bold),
+                Font = new Font("Segoe UI", 32, FontStyle.Bold),
                 ForeColor = Color.FromArgb(44, 62, 80),
                 AutoSize = true,
-                Location = new Point(20, 60)
+                Location = new Point(20, 55)
             };
             card.Controls.Add(valueLabel);
 
@@ -404,8 +456,9 @@ namespace InventoryManagement.UI
                 Text = subtitle,
                 Font = new Font("Segoe UI", 10),
                 ForeColor = Color.FromArgb(127, 140, 141),
-                AutoSize = true,
-                Location = new Point(20, 130)
+                AutoSize = false,
+                Size = new Size(card.Width - 40, 40),
+                Location = new Point(20, card.Height - 45)
             };
             card.Controls.Add(subtitleLabel);
 
@@ -432,18 +485,7 @@ namespace InventoryManagement.UI
 
             return card;
         }
-        private void OpenDialog(Form form)
-        {
-            try
-            {
-                form.StartPosition = FormStartPosition.CenterParent;
-                form.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur lors de l'ouverture du formulaire : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        
 
     }
 }

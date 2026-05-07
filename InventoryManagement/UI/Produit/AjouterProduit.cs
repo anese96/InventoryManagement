@@ -1,5 +1,9 @@
-﻿using InventoryManagement.Data.DTO;
+using InventoryManagement.Data;
+using InventoryManagement.Data.DTO;
+using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Repositorys;
+using InventoryManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,12 +20,12 @@ namespace InventoryManagement.UI.Produit
     {
 
         private readonly IService<ProduitDto> _service;
+        //private readonly ProduitService _duitService;
 
-     
-        private TextBox txtRef, txtDesignation, txtBarCode, txtPurchasePrice, txtSalesPrice, txtStock, txtAlertQty, txtColisage;
-        private DataGridView dgvPriceLists;
-        private ComboBox cbCategory, cbTaxe, cbUnit, cbNature, cbBrand;
-        private CheckBox cbAutoBarecode;
+        public TextBox txtRef, txtDesignation, txtBarCode, txtPurchasePrice, txtSalesPrice, txtStock, txtAlertQty, txtColisage;
+        public DataGridView dgvPriceLists;
+        public ComboBox cbCategory, cbTaxe, cbUnit, cbNature, cbBrand;
+        public CheckBox cbAutoBarecode;
 
         private readonly FunctionUI _functionUI;
 
@@ -32,7 +36,41 @@ namespace InventoryManagement.UI.Produit
             _functionUI = functionUI;
             InitializeCustomComponents();
             _service = service;
+            LoadAllData();
 
+        }
+        private void LoadAllData()
+        {
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    cbCategory.DataSource = db.Categories.OrderBy(c => c.Name).ToList();
+                    cbCategory.DisplayMember = "Name";
+                    cbCategory.ValueMember = "Id";
+                    cbCategory.SelectedIndex = -1;
+
+                    cbUnit.DataSource = db.Units.OrderBy(c => c.Name).ToList();
+                    cbUnit.DisplayMember = "Name";
+                    cbUnit.ValueMember = "Id";
+                    cbUnit.SelectedIndex = -1;
+
+                    cbBrand.DataSource = db.Marques.OrderBy(c => c.Name).ToList();
+                    cbBrand.DisplayMember = "Name";
+                    cbBrand.ValueMember = "Id";
+                    cbBrand.SelectedIndex = -1;
+
+                    cbNature.DataSource = db.Natures.OrderBy(c => c.Name).ToList();
+                    cbNature.DisplayMember = "Name";
+                    cbNature.ValueMember = "Id";
+                    cbNature.SelectedIndex = -1;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur de chargement : " + ex.Message);
+            }
         }
         public void InitializeCustomComponents()
         {
@@ -53,7 +91,7 @@ namespace InventoryManagement.UI.Produit
             this.Controls.Add(mainLayout);
             Label lblHeader = new Label
             {
-                Text = "📦 Ajouter un Produit",
+                Text = "📦  Produit",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(44, 62, 80),
@@ -210,29 +248,66 @@ namespace InventoryManagement.UI.Produit
 
         }
 
-        private async void BtnSave_Click(object? sender, EventArgs e)
+        public  virtual async void BtnSave_Click(object? sender, EventArgs e)
         {
             try { 
-            await _service.AddAsync(new ProduitDto
+            var produitDto = new ProduitDto
             {
                 RefProduct = txtRef.Text,
                 Designation = txtDesignation.Text,              
                 Taxe = cbTaxe.Text,
                 BarCode = txtBarCode.Text,
+                CategoryId = (cbCategory.SelectedItem as Category)?.Id,
+                UnitId = (cbUnit.SelectedItem as Unit)?.Id,
+                MarqueId = (cbBrand.SelectedItem as Marque)?.Id,
+                NatureId = (cbNature.SelectedItem as Nature)?.Id,
                 PurchasePrice = _functionUI.ParseDecimal(txtPurchasePrice.Text),
                 SalesPrice = _functionUI.ParseDecimal(txtSalesPrice.Text),
                 StockQuantity = _functionUI.ParseDecimal(txtStock.Text),
                 QtyAlert = _functionUI.ParseDecimal(txtAlertQty.Text),
-            
+            };
+            await _service.AddAsync(produitDto);
+            await SavePriceList(dgvPriceLists, produitDto.Id);
 
-            });
-            MessageBox.Show("Produit ajouté avec succès");
+                MessageBox.Show("Produit ajouté avec succès");
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.InnerException?.Message ?? ex.Message);
                 this.DialogResult = DialogResult.OK;
+            }
+        }
+
+        public virtual async Task SavePriceList(DataGridView dataGridView, int  IdProduct)
+        {
+            // Save Price Lists
+            var db = new AppDbContext();
+            if (dataGridView.Rows.Count > 0)
+            {
+                bool hasPriceLists = false;
+                foreach (DataGridViewRow row in dataGridView.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    string name = row.Cells[0].Value?.ToString();
+                    string priceVal = row.Cells[1].Value?.ToString();
+
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        var pl = new PriceLists
+                        {
+                            ProductId = IdProduct,
+                            Name = name,
+                            Price = Convert.ToDecimal(priceVal)
+                        };
+                        await db.PriceLists.AddAsync(pl);
+                        hasPriceLists = true;
+                    }
+                }
+                if (hasPriceLists)
+                {
+                    await db.SaveChangesAsync();
+                }
             }
         }
     }
