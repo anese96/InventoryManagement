@@ -92,7 +92,7 @@ namespace InventoryManagement.UI.Client
                 if (dgvClients.SelectedRows.Count == 0) return;
                 var row = dgvClients.SelectedRows[0];
                 if (row.Cells["ID"].Value == null) return;
-                int id = Convert.ToInt32(row.Cells["ID"].Value);
+                int id = Convert.ToInt32(row.Cells["ID"].Value);              
                 _formFactory.Open<ModifierClient>(id);
                 LoadData();
             }
@@ -106,10 +106,7 @@ namespace InventoryManagement.UI.Client
                 ID = p.Id,
                 Reference=p.RefCustomer,
                 Nom = p.Name,
-                Téléphone=p.PhoneNumber
-
-
-            }).ToList();
+                Téléphone=p.PhoneNumber }).ToList();
             helper.SetData(customers);
             if (dgvClients.Columns["ID"] != null) dgvClients.Columns["ID"].Visible = false;
 

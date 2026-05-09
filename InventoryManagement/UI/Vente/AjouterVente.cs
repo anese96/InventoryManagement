@@ -1,4 +1,6 @@
-﻿using System;
+﻿using InventoryManagement.Data.DTO;
+using InventoryManagement.InterfacesServices;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,11 +12,13 @@ using System.Windows.Forms;
 
 namespace InventoryManagement.UI.Vente
 {
-    public partial class AjouterVente : Form
+    public partial class AjouterVente : SalePurchaseForm
     {
-        public AjouterVente()
+ 
+        public AjouterVente(): base()
         {
             InitializeComponent();
         }
+
     }
 }
