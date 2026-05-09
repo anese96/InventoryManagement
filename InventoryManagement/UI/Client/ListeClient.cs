@@ -93,7 +93,6 @@ namespace InventoryManagement.UI.Client
                 var row = dgvClients.SelectedRows[0];
                 if (row.Cells["ID"].Value == null) return;
                 int id = Convert.ToInt32(row.Cells["ID"].Value);
-               
                 _formFactory.Open<ModifierClient>(id);
                 LoadData();
             }
