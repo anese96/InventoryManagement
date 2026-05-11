@@ -41,6 +41,7 @@ namespace InventoryManagement.Repositorys
             return new SalesInvoiceLineDto
             {
                 IdSalesInvoice = salesInvoiceLines.IdSalesInvoice,
+                IdProduct = salesInvoiceLines.IdProduct,
                 RefProduct = salesInvoiceLines.RefProduct,   
                 Designation = salesInvoiceLines.Designation,
                 Quantity = salesInvoiceLines.Quantity,
@@ -58,6 +59,7 @@ namespace InventoryManagement.Repositorys
             {
                 
                 IdSalesInvoice  = entity.IdSalesInvoice,
+                IdProduct = entity.IdProduct,
                 RefProduct = entity.RefProduct,
                 Designation = entity.Designation,
                 Quantity = entity.Quantity,

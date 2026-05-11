@@ -41,8 +41,6 @@ namespace InventoryManagement.UI.Produit
                     var produit = task.Result;
                     if (produit != null)
                     {
-                       // this.Invoke(new Action(() =>
-                        //{
                             txtRef.Text = produit.RefProduct ;
                             txtDesignation.Text = produit.Designation;
                             cbCategory.SelectedValue =produit.CategoryId ?? -1;
@@ -56,8 +54,6 @@ namespace InventoryManagement.UI.Produit
                             txtStock.Text = produit.StockQuantity?.ToString("F2");
                             txtAlertQty.Text = produit.QtyAlert?.ToString("F2");
                             txtColisage.Text = produit.Colisage?.ToString();
-                       // }));
-
                     }
                     
                     else

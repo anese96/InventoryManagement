@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Data;
+using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
@@ -11,27 +11,28 @@ using System.Threading.Tasks;
 
 namespace InventoryManagement.UI
 {
-    public class SalePurchaseForm : Form
+    public abstract class SalePurchaseForm : Form
     {
-        private readonly IService<SalesInvoicesDto> _service;
+       // private readonly IService<SalesInvoicesDto> _service;
  
         private readonly FunctionUI _functionUI;
-        private TextBox cmbClient;
-        private TextBox txtNumFacture;
-        private DateTimePicker dtpDate;
-        private DataGridView dgvArticles;
-        private Button btnAddRow;
-        private ComboBox cbxCaisse;
-        private NumericUpDown numTotalHT, numRemise, numTotalHTRemise, numTotalTVA, numTotalTTC, numMontantPaye, numResteAPayer;
+        public TextBox cmbClient;
+        public TextBox txtNumFacture;
+        public DateTimePicker dtpDate;
+        public DataGridView dgvArticles;
+        public Button btnAddRow;
+        public ComboBox cbxCaisse;
+        public NumericUpDown numTotalHT, numRemise, numTotalHTRemise, numTotalTVA, numTotalTTC, numMontantPaye, numResteAPayer;
 
 
         private AutoCompleteStringCollection refCollection = new AutoCompleteStringCollection();
         private AutoCompleteStringCollection descCollection = new AutoCompleteStringCollection();
-        public SalePurchaseForm()
+        public SalePurchaseForm( FunctionUI functionUI)
         {
-       
+            _functionUI = functionUI;
             InitializeCustomComponents();
             BtnAddRow_Click(null, null);
+        //    LoadAllData();
         }
 
      
@@ -232,6 +233,8 @@ namespace InventoryManagement.UI
             dgvArticles.EnableHeadersVisualStyles = false;
 
 
+            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", Name = "IdProduct" });
+            dgvArticles.Columns["IdProduct"].Visible = false;
             dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Réf Produit", Name = "RefProduit" });
             dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Désignation", Name = "Designation", Width = 300 });
             dgvArticles.Columns.Add(new DataGridViewComboBoxColumn { HeaderText = "Tarification", Name = "Tarification", Width = 150, FlatStyle = FlatStyle.Flat });
@@ -379,7 +382,7 @@ namespace InventoryManagement.UI
                 Cursor = Cursors.Hand
             };
             btnCancel.FlatAppearance.BorderSize = 0;
-            btnCancel.Click += BtnCancel_Click;
+            btnCancel.Click += _functionUI.BtnCancel_Click;
             buttonPanel.Controls.Add(btnCancel);
         }
 
@@ -395,13 +398,13 @@ namespace InventoryManagement.UI
 
                 if (colName == "RefProduit")
                 {
-                    string val = row.Cells["RefProduit"].Value?.ToString();
-                    product = db.Products.FirstOrDefault(p => p.RefProduct == val);
+                    string val = row.Cells["RefProduit"].Value?.ToString()?.ToLower();
+                    product = db.Products.FirstOrDefault(p => p.RefProduct.ToLower() == val);
                 }
                 else if (colName == "Designation")
                 {
-                    string val = row.Cells["Designation"].Value?.ToString();
-                    product = db.Products.FirstOrDefault(p => p.Designation == val);
+                    string val = row.Cells["Designation"].Value?.ToString()?.ToLower();
+                    product = db.Products.FirstOrDefault(p => p.Designation.ToLower() == val);
                 }
                 else if (colName == "Tarification")
                 {
@@ -419,13 +422,14 @@ namespace InventoryManagement.UI
 
                     dgvArticles.CellValueChanged -= DgvArticles_CellValueChanged;
 
+                    row.Cells["IdProduct"].Value = product.Id;
                     row.Cells["RefProduit"].Value = product.RefProduct;
                     row.Cells["Designation"].Value = product.Designation;
 
                     // Populate Tarification
                     try
                     {
-                        var priceLists = db.PriceLists.Where(pl => pl.Id == product.Id).ToList();
+                        var priceLists = db.PriceLists.Where(pl => pl.ProductId == product.Id).ToList();
                         var options = new System.Collections.Generic.List<PriceOption>();
                         options.Add(new PriceOption { Display = $"Standard ({product.SalesPrice:N2})", Value = product.SalesPrice });
                         foreach (var pl in priceLists)
@@ -610,16 +614,7 @@ namespace InventoryManagement.UI
             yPos += 30;
         }
 
-        private void BtnCancel_Click(object? sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void BtnSave_Click(object? sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
+        public  abstract void BtnSave_Click(object? sender, EventArgs e);        
         private void DgvArticles_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
         {
             if (e.Control is TextBox autoText)
@@ -708,8 +703,8 @@ namespace InventoryManagement.UI
 
         private void BtnAddRow_Click(object sender, EventArgs e)
         {
-            // Ref, Desig, Tarif, Qte, Prix, QtePack, TVA, TotalHT
-            int rowIndex = dgvArticles.Rows.Add("", "", null, "1", "0.00", "0", "0%", "0.00");
+            // IdProduct (hidden), Ref, Desig, Tarif, Qte, Prix, QtePack, TVA, TotalHT
+            int rowIndex = dgvArticles.Rows.Add("", "", "", null, "1", "0.00", "0", "0%", "0.00");
             dgvArticles.CurrentCell = dgvArticles.Rows[rowIndex].Cells["RefProduit"];
             dgvArticles.BeginEdit(true);
         }

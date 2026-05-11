@@ -51,18 +51,28 @@ namespace InventoryManagement
             services.AddScoped<IRepository<VendorDto>,VendorRepository>();
             services.AddScoped<IService<VendorDto>, VendorService>();
 
+            services.AddScoped<IRepository<SalesInvoicesDto>,SalesInvoicesRepository>();
+            services.AddScoped<IService<SalesInvoicesDto>, SalesInvoicesService>();
 
-            /// Ajouter -------------------------------------------------
+            services.AddScoped<IRepository<SalesInvoiceLineDto>,SalesInvoiceLineRepository>();
+            services.AddScoped<IService<SalesInvoiceLineDto>, SalesInvoiceLineService>();
+
+
+            /// Ajouter  -------------------------------------------------
             services.AddTransient<AjouterProduit>();
             services.AddTransient<AjouterClient>();
             services.AddTransient<AjouterFournisseur>();
             services.AddTransient<AjouterVente>();
 
-            services.AddTransient<MainDashboard>(); 
+
+            /// Modifier ----------------------------------------------------
             services.AddTransient<ModifierProduit>(); 
             services.AddTransient<ModifierClient>(); 
+            services.AddTransient<ModifierVente>();
 
+            services.AddTransient<MainDashboard>();
             services.AddSingleton<FunctionUI>();
+            services.AddSingleton<ProduitRepository>();
             services.AddSingleton<IFormManager , FormFactory>();
             
          

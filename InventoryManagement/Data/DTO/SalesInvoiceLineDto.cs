@@ -9,6 +9,7 @@ namespace InventoryManagement.Data.DTO
     public class SalesInvoiceLineDto
     {
         public int IdSalesInvoice { get; set; }
+        public int IdProduct { get; set; }
         public string RefProduct { get; set; }
         public string Designation { get; set; }
         public decimal Quantity { get; set; }

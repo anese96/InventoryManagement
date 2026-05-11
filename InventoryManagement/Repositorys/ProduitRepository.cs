@@ -23,6 +23,27 @@ namespace InventoryManagement.Repositorys
             _addEntityBD = addEntityBD;
         }
 
+        public async Task ModifierQty(int id, int qty , bool isAddition)
+        {
+            var produit = await _appContext.Products.FindAsync(id);
+            if (produit == null)
+            {
+                throw new ArgumentException("Produit not found.");
+            }
+           if (isAddition)
+            {
+                produit.StockQuantity += qty;
+            }
+            else
+            {
+                if (produit.StockQuantity < qty)
+                {
+                    throw new Exception($"La quantité est insuffisante pour le produit: {produit.Designation}");
+                }
+                produit.StockQuantity -= qty;
+            }
+            await _appContext.SaveChangesAsync();
+        }
         public async Task Insert(ProduitDto entity)
         {
             var produit = new Product

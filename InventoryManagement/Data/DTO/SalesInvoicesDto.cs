@@ -11,6 +11,7 @@ namespace InventoryManagement.Data.DTO
 {
     public class SalesInvoicesDto
     {
+        public int Id { get; set; }
         public string NumberInvoice { get; set; }
         public DateTime DateInvoice { get; set; }
         public int? IdCustomer { get; set; }

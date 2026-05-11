@@ -235,7 +235,8 @@ namespace InventoryManagement.UI
         }
         private void BtnSales_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            SetActiveButton(btnSales);
+            LoadFormInPanel(new ListeVentes(_formFactory));
         }
         private void BtnClients_Click(object sender, EventArgs e)
         {

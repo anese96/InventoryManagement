@@ -16,6 +16,8 @@ namespace InventoryManagement.Data.Models
         [ForeignKey(nameof(SalesInvoice))]
         [Required]
         public int IdSalesInvoice { get; set; }
+        [Required]
+        public int  IdProduct { get; set; }
         [MaxLength(100)]
         [Required]
         public string RefProduct { get; set; }

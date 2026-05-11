@@ -15,6 +15,14 @@ namespace InventoryManagement.Repositorys
     {
         private readonly AppDbContext _appContext;
         private readonly AddEntityBD _addEntityBD;
+
+
+        public SalesInvoicesRepository(AppDbContext appContext, AddEntityBD addEntityBD)
+        {
+            _appContext = appContext;
+            _addEntityBD = addEntityBD;
+        }
+
         public Task Delete(int id)
         {
             throw new NotImplementedException();
@@ -70,6 +78,7 @@ namespace InventoryManagement.Repositorys
             };
             await _appContext.SalesInvoices.AddAsync(salesInvoices);
             await _appContext.SaveChangesAsync();
+            entity.Id = salesInvoices.Id;
         }
 
         public async Task Update(SalesInvoicesDto entity, int Id)
