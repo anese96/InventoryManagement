@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260511175628_AddIdproduct")]
-    partial class AddIdproduct
+    [Migration("20260523144347_new")]
+    partial class @new
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -214,6 +214,9 @@ namespace InventoryManagement.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("IdCrates")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("IdCustomer")
                         .HasColumnType("INTEGER");
 
@@ -235,6 +238,8 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdCrates");
 
                     b.HasIndex("IdCustomer");
 
@@ -674,6 +679,9 @@ namespace InventoryManagement.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<decimal>("PurchasePrice")
+                        .HasColumnType("decimal(18, 2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("TEXT");
 
@@ -856,11 +864,19 @@ namespace InventoryManagement.Migrations
 
             modelBuilder.Entity("InventoryManagement.Data.Models.PaymentCustomer", b =>
                 {
+                    b.HasOne("InventoryManagement.Data.Models.Crates", "Crates")
+                        .WithMany()
+                        .HasForeignKey("IdCrates")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("InventoryManagement.Data.Models.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("IdCustomer")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Crates");
 
                     b.Navigation("Customer");
                 });

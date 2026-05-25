@@ -19,10 +19,11 @@ namespace InventoryManagement.UI.Produit
         DataGridHelper helper;
         private readonly IFormManager _formFactory;
         private DataGridView dgvProducts;
-        
-        public ListeProduits(IFormManager formFactory)
+        private readonly AppDbContext _appContext;
+        public ListeProduits(IFormManager formFactory, AppDbContext appContext)
         {
             _formFactory = formFactory;
+            _appContext = appContext;
             InitializeComponent();
             InitializeCustomComponents();
         }
@@ -106,8 +107,8 @@ namespace InventoryManagement.UI.Produit
 
         private void LoadData()
         {
-            var db = new AppDbContext();
-            var produits = db.Products.Select(p => new
+         
+            var produits = _appContext.Products.Select(p => new
             {
                 ID = p.Id,
                 Référence = p.RefProduct,

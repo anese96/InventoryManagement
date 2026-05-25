@@ -17,11 +17,11 @@ namespace InventoryManagement.UI
     {
         // ── Public events ────────────────────────────────────────────────────
         /// <summary>Raised when the user clicks Add and a new item was confirmed.</summary>
-        public event Action<T> OnAdd;
+        public event Func<T, System.Threading.Tasks.Task> OnAdd;
         /// <summary>Raised when the user edits an existing row and confirms changes.</summary>
-        public event Action<T> OnEdit;
+        public event Func<T, System.Threading.Tasks.Task> OnEdit;
         /// <summary>Raised when the user requests deletion of a row. Return false to abort.</summary>
-        public event Func<T, bool> OnDelete;
+        public event Func<T, System.Threading.Tasks.Task<bool>> OnDelete;
 
         // ── State ────────────────────────────────────────────────────────────
         private IList<T>          _data;
@@ -165,6 +165,7 @@ namespace InventoryManagement.UI
             dgv.ColumnHeadersDefaultCellStyle.ForeColor  = Color.White;
             dgv.ColumnHeadersDefaultCellStyle.Font       = new Font("Segoe UI", 9, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = CrudTheme.HeaderBg;
+            dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
 
             // Row alternating colours
             dgv.DefaultCellStyle.Font           = new Font("Segoe UI", 9);
@@ -258,17 +259,17 @@ namespace InventoryManagement.UI
 
         // ── Toolbar handlers ─────────────────────────────────────────────────
 
-        private void BtnAdd_Click(object sender, EventArgs e)
+        private async void BtnAdd_Click(object sender, EventArgs e)
         {
             var res = CrudFormGenerator.ShowAddForm<T>(context: _context);
             if (!res.Saved) return;
 
             _data.Add(res.Instance);
-            OnAdd?.Invoke(res.Instance);
+            if (OnAdd != null) await OnAdd.Invoke(res.Instance);
             RefreshGrid();
         }
 
-        private void BtnEdit_Click(object sender, EventArgs e)
+        private async void BtnEdit_Click(object sender, EventArgs e)
         {
             var item = GetSelectedItem();
             if (item == null) { ShowNoSelectionWarning(); return; }
@@ -280,11 +281,11 @@ namespace InventoryManagement.UI
             var idx = _data.IndexOf(item);
             if (idx >= 0) _data[idx] = res.Instance;
 
-            OnEdit?.Invoke(res.Instance);
+            if (OnEdit != null) await OnEdit.Invoke(res.Instance);
             RefreshGrid();
         }
 
-        private void BtnDelete_Click(object sender, EventArgs e)
+        private async void BtnDelete_Click(object sender, EventArgs e)
         {
             var item = GetSelectedItem();
             if (item == null) { ShowNoSelectionWarning(); return; }
@@ -295,7 +296,12 @@ namespace InventoryManagement.UI
 
             if (confirm != DialogResult.Yes) return;
 
-            bool canDelete = OnDelete?.Invoke(item) ?? true;
+            bool canDelete = true;
+            if (OnDelete != null)
+            {
+                canDelete = await OnDelete.Invoke(item);
+            }
+
             if (!canDelete) return;
 
             _data.Remove(item);

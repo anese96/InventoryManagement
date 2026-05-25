@@ -3,6 +3,7 @@ using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Entity;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesRepositorys;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,14 +22,32 @@ namespace InventoryManagement.Repositorys
         {
             _appContext = appDbContext;
         }
-        public Task Delete(int id)
+        public async Task Delete(int id)
         {
-            throw new NotImplementedException();
+            var salesInvoiceLines = await _appContext.salesInvoiceLines.Where(sil=>sil.IdSalesInvoice==id).FirstOrDefaultAsync();
+            if (salesInvoiceLines == null)
+            {
+                throw new ArgumentException("salesInvoiceLines not found.");
+            }
+            _appContext.salesInvoiceLines.Remove(salesInvoiceLines);
+            await _appContext.SaveChangesAsync();
         }
 
-        public Task<List<SalesInvoiceLineDto>> GetAll()
+        public async Task<List<SalesInvoiceLineDto>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _appContext.salesInvoiceLines
+      .Select(salesInvoiceLine => new SalesInvoiceLineDto
+      {
+          IdSalesInvoice = salesInvoiceLine.IdSalesInvoice,
+          IdProduct = salesInvoiceLine.IdProduct,
+          RefProduct = salesInvoiceLine.RefProduct,
+          Designation = salesInvoiceLine.Designation,
+          Quantity = salesInvoiceLine.Quantity,
+          Price = salesInvoiceLine.Price,
+          Taxe = salesInvoiceLine.Taxe,
+          TotalWithoutTax = salesInvoiceLine.TotalWithoutTax,
+      })
+      .ToListAsync();
         }
 
         public async Task<SalesInvoiceLineDto> GetById(int Id)
@@ -55,6 +74,8 @@ namespace InventoryManagement.Repositorys
 
         public async Task Insert(SalesInvoiceLineDto entity)
         {
+           var purchasePrice = _appContext.Products.Where(p => p.Id == entity.IdProduct).
+                Select(p => p.PurchasePrice).FirstOrDefault();
             var salesInvoiceLine = new SalesInvoiceLine
             {
                 
@@ -64,6 +85,7 @@ namespace InventoryManagement.Repositorys
                 Designation = entity.Designation,
                 Quantity = entity.Quantity,
                 Price = entity.Price,
+                PurchasePrice = (decimal)purchasePrice,
                 Taxe = entity.Taxe,
                 TotalWithoutTax = entity.TotalWithoutTax,
 

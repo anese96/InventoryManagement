@@ -28,9 +28,23 @@ namespace InventoryManagement.Repositorys
             throw new NotImplementedException();
         }
 
-        public Task<List<SalesInvoicesDto>> GetAll()
+        public async Task<List<SalesInvoicesDto>> GetAll()
         {
-            throw new NotImplementedException();
+           return await Task.FromResult(_appContext.SalesInvoices.Select(s => new SalesInvoicesDto
+            {
+                Id = s.Id,
+                NumberInvoice = s.NumberInvoice,
+                DateInvoice = s.DateInvoice,
+                IdCustomer = s.IdCustomer,
+                TotalWithoutTax = s.TotalWithoutTax,
+                Remise = s.Remise,
+                TotalWithoutTaxRemise = s.TotalWithoutTaxRemise,
+                TotalTax = s.TotalTax,
+                TotalInvoice = s.TotalInvoice,
+                PaymentInvoice = s.PaymentInvoice,
+                BalanceInvoice = s.BalanceInvoice,
+                IdCrates = s.IdCrates
+            }).ToList());
         }
 
         public async Task<SalesInvoicesDto> GetById(int Id)

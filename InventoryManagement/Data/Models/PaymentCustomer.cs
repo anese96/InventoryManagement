@@ -26,7 +26,9 @@ namespace InventoryManagement.Data.Models
         [Required]
         public decimal? Payment { get; set; } //  Montant
 
-
+        [ForeignKey(nameof(Crates))]
+        public int IdCrates { get; set; }      
         public Customer Customer { get; set; }
+        public Crates Crates { get; set; }
     }
 }

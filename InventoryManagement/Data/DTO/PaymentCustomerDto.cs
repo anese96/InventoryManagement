@@ -12,6 +12,7 @@ namespace InventoryManagement.Data.DTO
     public class PaymentCustomerDto
     {
         public int IdCustomer { get; set; }
+        public int IdCrates { get; set; }
         public string NumberPayment { get; set; }
         public DateTime DatePayment { get; set; }
 

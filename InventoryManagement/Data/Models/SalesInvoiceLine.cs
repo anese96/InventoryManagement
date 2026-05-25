@@ -30,6 +30,9 @@ namespace InventoryManagement.Data.Models
         [Column(TypeName = "decimal(18, 2)")]
         [Required]
         public decimal Price { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        [Required]
+        public decimal PurchasePrice { get; set; }
 
         public string Taxe { get; set; }
         [Column(TypeName = "decimal(18, 2)")]

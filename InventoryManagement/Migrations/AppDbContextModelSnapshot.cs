@@ -211,6 +211,9 @@ namespace InventoryManagement.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("IdCrates")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("IdCustomer")
                         .HasColumnType("INTEGER");
 
@@ -232,6 +235,8 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdCrates");
 
                     b.HasIndex("IdCustomer");
 
@@ -671,6 +676,9 @@ namespace InventoryManagement.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<decimal>("PurchasePrice")
+                        .HasColumnType("decimal(18, 2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("TEXT");
 
@@ -853,11 +861,19 @@ namespace InventoryManagement.Migrations
 
             modelBuilder.Entity("InventoryManagement.Data.Models.PaymentCustomer", b =>
                 {
+                    b.HasOne("InventoryManagement.Data.Models.Crates", "Crates")
+                        .WithMany()
+                        .HasForeignKey("IdCrates")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("InventoryManagement.Data.Models.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("IdCustomer")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Crates");
 
                     b.Navigation("Customer");
                 });

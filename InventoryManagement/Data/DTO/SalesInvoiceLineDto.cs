@@ -14,6 +14,7 @@ namespace InventoryManagement.Data.DTO
         public string Designation { get; set; }
         public decimal Quantity { get; set; }
         public decimal Price { get; set; }
+        public decimal PurchasePrice { get; set; }
         public string Taxe { get; set; }
         public decimal TotalWithoutTax { get; set; }
 

@@ -26,46 +26,44 @@ namespace InventoryManagement.UI.Produit
         public DataGridView dgvPriceLists;
         public ComboBox cbCategory, cbTaxe, cbUnit, cbNature, cbBrand;
         public CheckBox cbAutoBarecode;
-
+        
         private readonly FunctionUI _functionUI;
+        private readonly AppDbContext _appContext;
 
-    
-        public AjouterProduit(FunctionUI functionUI , IService<ProduitDto> service)
+        public AjouterProduit(FunctionUI functionUI , IService<ProduitDto> service , AppDbContext appContext)
         {
             InitializeComponent();
             _functionUI = functionUI;
             InitializeCustomComponents();
             _service = service;
+            _appContext = appContext;
             LoadAllData();
-
         }
         private void LoadAllData()
         {
             try
             {
-                using (var db = new AppDbContext())
-                {
-                    cbCategory.DataSource = db.Categories.OrderBy(c => c.Name).ToList();
+                    cbCategory.DataSource = _appContext.Categories.OrderBy(c => c.Name).ToList();
                     cbCategory.DisplayMember = "Name";
                     cbCategory.ValueMember = "Id";
                     cbCategory.SelectedIndex = -1;
 
-                    cbUnit.DataSource = db.Units.OrderBy(c => c.Name).ToList();
+                    cbUnit.DataSource = _appContext.Units.OrderBy(c => c.Name).ToList();
                     cbUnit.DisplayMember = "Name";
                     cbUnit.ValueMember = "Id";
                     cbUnit.SelectedIndex = -1;
 
-                    cbBrand.DataSource = db.Marques.OrderBy(c => c.Name).ToList();
+                    cbBrand.DataSource = _appContext.Marques.OrderBy(c => c.Name).ToList();
                     cbBrand.DisplayMember = "Name";
                     cbBrand.ValueMember = "Id";
                     cbBrand.SelectedIndex = -1;
 
-                    cbNature.DataSource = db.Natures.OrderBy(c => c.Name).ToList();
+                    cbNature.DataSource = _appContext.Natures.OrderBy(c => c.Name).ToList();
                     cbNature.DisplayMember = "Name";
                     cbNature.ValueMember = "Id";
                     cbNature.SelectedIndex = -1;
 
-                }
+                
             }
             catch (Exception ex)
             {
@@ -197,6 +195,8 @@ namespace InventoryManagement.UI.Produit
             dgvPriceLists.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(44, 62, 80);
             dgvPriceLists.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvPriceLists.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            dgvPriceLists.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(44, 62, 80);
+            dgvPriceLists.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
             dgvPriceLists.DefaultCellStyle.Font = new Font("Segoe UI", 9);
 
             dgvPriceLists.Columns.Add("Name", "Tarification");
@@ -274,15 +274,20 @@ namespace InventoryManagement.UI.Produit
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.InnerException?.Message ?? ex.Message);
-                this.DialogResult = DialogResult.OK;
+                MessageBox.Show(
+                    ex.Message,
+                    "Validation",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
             }
         }
 
         public virtual async Task SavePriceList(DataGridView dataGridView, int  IdProduct)
         {
             // Save Price Lists
-            var db = new AppDbContext();
+           
             if (dataGridView.Rows.Count > 0)
             {
                 bool hasPriceLists = false;
@@ -300,13 +305,13 @@ namespace InventoryManagement.UI.Produit
                             Name = name,
                             Price = Convert.ToDecimal(priceVal)
                         };
-                        await db.PriceLists.AddAsync(pl);
+                        await _appContext.PriceLists.AddAsync(pl);
                         hasPriceLists = true;
                     }
                 }
                 if (hasPriceLists)
                 {
-                    await db.SaveChangesAsync();
+                    await _appContext.SaveChangesAsync();
                 }
             }
         }

@@ -19,11 +19,13 @@ namespace InventoryManagement.UI.Produit
         private readonly FunctionUI _functionUI;
         private readonly IService<ProduitDto> _service;
         private int _id;
+        private readonly AppDbContext _appContext;
         
-        public ModifierProduit(int id , FunctionUI functionUI, IService<ProduitDto> service):base(functionUI, service)
+        public ModifierProduit(int id , FunctionUI functionUI, IService<ProduitDto> service, AppDbContext appContext):base(functionUI, service, appContext)
         {
             _id = id;
             _functionUI = functionUI;
+            _appContext = appContext;
             _service = service;
             InitializeComponent();
             InitializeCustomComponents();
@@ -31,6 +33,7 @@ namespace InventoryManagement.UI.Produit
             GetPriceLists(_id);
 
         }
+
 
         private void LoadProduitData()
         {
@@ -72,8 +75,8 @@ namespace InventoryManagement.UI.Produit
 
         public void GetPriceLists(int IdProduct)
         {
-            var db = new AppDbContext();
-            var priceLists = db.PriceLists.Where(p => p.ProductId == IdProduct).ToList();
+           
+            var priceLists = _appContext.PriceLists.Where(p => p.ProductId == IdProduct).ToList();
             dgvPriceLists.Rows.Clear();
             foreach (var price in priceLists)
             {
@@ -127,10 +130,10 @@ namespace InventoryManagement.UI.Produit
 
         public override async Task SavePriceList(DataGridView dataGridView, int IdProduct)
         {
-            var db = new AppDbContext();
+           
             // 3. Sync Price Lists (Remove and Re-add)
-            var existingPrices = db.PriceLists.Where(p => p.ProductId == IdProduct);
-            db.PriceLists.RemoveRange(existingPrices);
+            var existingPrices = _appContext.PriceLists.Where(p => p.ProductId == IdProduct);
+            _appContext.PriceLists.RemoveRange(existingPrices);
 
             foreach (DataGridViewRow row in dgvPriceLists.Rows)
             {
@@ -139,7 +142,7 @@ namespace InventoryManagement.UI.Produit
 
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    db.PriceLists.Add(new PriceLists
+                    _appContext.PriceLists.Add(new PriceLists
                     {
                         ProductId = IdProduct,
                         Name = name,
@@ -148,7 +151,7 @@ namespace InventoryManagement.UI.Produit
                 }
             }
 
-            db.SaveChanges();
+            _appContext.SaveChanges();
         }
     }
 }

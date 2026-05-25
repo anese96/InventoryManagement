@@ -1,5 +1,8 @@
+using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
+using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,24 +15,32 @@ using System.Windows.Forms;
 
 namespace InventoryManagement.UI.Client
 {
-    public partial class AjouterClient : Form
+    public partial class AjouterPayment : Form
     {
-        private readonly IService<ClientDto> _service;
         private readonly FunctionUI _functionUI;
+        private readonly AppDbContext _appContext;
 
-        private TextBox txtReference, txtNom, txtTelephone, txtAdresse, txtRemarque;
-        public AjouterClient(FunctionUI functionUI , IService<ClientDto> service)
+        private readonly IService<PaymentCustomerDto> _service;
+        private int _idCustomer;
+
+        private TextBox txtNumberPayment, txtAmount;
+        private DateTimePicker dtpDate;
+        private ComboBox cbCaisse;
+        private readonly ClientService _clientService;
+
+        public AjouterPayment(int idCustomer, FunctionUI functionUI, IService<PaymentCustomerDto> service, AppDbContext appDbContext, ClientService clientService)
         {
+            _idCustomer = idCustomer;
+             _functionUI = functionUI;
+             _service = service;
+             _appContext = appDbContext;
+             _clientService = clientService;
             InitializeComponent();
-            _functionUI = functionUI;
             InitializeCustomComponents();
-            _service = service;
-           
         }
-
         private void InitializeCustomComponents()
         {
-            this.Text = "Ajouter un Client";
+            this.Text = "Ajouter un Paiement";
             this.Size = new Size(700, 480);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -39,17 +50,18 @@ namespace InventoryManagement.UI.Client
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 2,
+                RowCount = 3,
                 Padding = new Padding(10)
             };
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
             this.Controls.Add(mainLayout);
 
             // Header
             Label lblHeader = new Label
             {
-                Text = "👤 AJOUTER UN CLIENT",
+                Text = "👤 AJOUTER UN VERSEMENT",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = Color.FromArgb(44, 62, 80),
                 Dock = DockStyle.Fill,
@@ -77,13 +89,41 @@ namespace InventoryManagement.UI.Client
 
             int lblW = 150, fldW = 450, spc = 10;
 
-            _functionUI.AddFormField(formPanel, "Référence :", lblW, fldW, 30, spc, out txtReference, "", "", false);
-            txtReference.Text = "CL-" + DateTime.Now.ToString("HHmmss");
-            _functionUI.AddFormField(formPanel, "Nom :", lblW, fldW, 30, spc, out txtNom, "", "", false);
-            _functionUI.AddFormField(formPanel, "N° Téléphone :", lblW, fldW, 30, spc, out txtTelephone, "", "", false);
-            _functionUI.AddFormField(formPanel, "Adresse :", lblW, fldW, 30, spc, out txtAdresse, "", "", false);
-            _functionUI.AddFormField(formPanel, "Remarque :", lblW, fldW, 30, spc, out txtRemarque, "", "", false);
+            _functionUI.AddFormField(formPanel, "N° Versement :", lblW, fldW, 30, spc, out txtNumberPayment, "", "", false);
+            txtNumberPayment.Text = "PYM-" + DateTime.Now.ToString("HHmmss");
+            // Date
+            Panel pnlDate = new Panel { Size = new Size(lblW + fldW + 20, 35), Margin = new Padding(0, 0, 0, spc) };
 
+            Label lblDate = new Label
+            {
+                Text = "Date :",
+                Size = new Size(lblW, 30),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI", 10)
+            };
+
+            dtpDate = new DateTimePicker
+            {
+                Size = new Size(fldW, 30),
+                Location = new Point(lblW, 0),
+                Font = new Font("Segoe UI", 10),
+                Format = DateTimePickerFormat.Short
+            };
+
+            pnlDate.Controls.Add(lblDate);
+            pnlDate.Controls.Add(dtpDate);
+            formPanel.Controls.Add(pnlDate);
+
+
+            _functionUI.AddFormField(formPanel, "Montant :", lblW, fldW, 30, spc, out txtAmount, "N2", "0,00");
+            _functionUI.AddComboBoxField(formPanel, "Caisse:", lblW, fldW, spc, out cbCaisse);
+          
+                var crates = _appContext.Crates.ToList();
+                cbCaisse.DataSource = crates;
+                cbCaisse.DisplayMember = "Name";
+                cbCaisse.ValueMember = "Id";
+
+            
             FlowLayoutPanel buttonPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -128,18 +168,18 @@ namespace InventoryManagement.UI.Client
         {
             try
             {
-                var clientDto = new ClientDto
+                var clientDto = new PaymentCustomerDto
                 {
-                    RefCustomer = txtReference.Text.Trim(),
-                    Name = txtNom.Text.Trim(),
-                    PhoneNumber = txtTelephone.Text.Trim(),
-                    Address = txtAdresse.Text.Trim(),
-                    Remark = txtRemarque.Text.Trim(),
+                    IdCustomer = _idCustomer,
+                    NumberPayment = txtNumberPayment.Text.Trim(),
+                    DatePayment = dtpDate.Value,
+                    Payment = decimal.Parse(txtAmount.Text.Trim()),
+                    IdCrates = (int)cbCaisse.SelectedValue
                 };
                 await _service.AddAsync(clientDto);
-              
+                await _clientService.UpdateBalanceAsync(_idCustomer, -(clientDto.Payment.Value));
 
-                MessageBox.Show("Client ajouté avec succès");
+                MessageBox.Show("Payment ajouté avec succès");
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
@@ -152,7 +192,6 @@ namespace InventoryManagement.UI.Client
 
                 return;
             }
-
         }
     }
 }

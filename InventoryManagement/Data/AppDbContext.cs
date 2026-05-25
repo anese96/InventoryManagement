@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Data.Entity;
+using InventoryManagement.Data.Entity;
 using InventoryManagement.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,9 +12,8 @@ namespace InventoryManagement.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext() : base()
+        public AppDbContext()
         {
-            this.Database.EnsureCreated();
         }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -22,12 +21,12 @@ namespace InventoryManagement.Data
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-           // if (!optionsBuilder.IsConfigured)
-           // {
-                //string connectionString = ConfigurationManager.ConnectionStrings["InventoryDbConnection"].ConnectionString;
-                //optionsBuilder.UseSqlServer(connectionString);
-                optionsBuilder.UseSqlite("Data Source=InventoryManagement.db");
-            //}
+            if (!optionsBuilder.IsConfigured)
+            {
+                 //string connectionString = ConfigurationManager.ConnectionStrings["InventoryDbConnection"].ConnectionString;
+                 //optionsBuilder.UseSqlServer(connectionString);
+                 optionsBuilder.UseSqlite("Data Source=InventoryManagement.db");
+            }
         }
         
         public DbSet<Category> Categories { get; set; }

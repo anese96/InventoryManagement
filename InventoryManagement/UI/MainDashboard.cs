@@ -17,6 +17,7 @@ using InventoryManagement.UI.Fournisseur;
 using InventoryManagement.UI.Vente;
 using InventoryManagement.UI.VentesComptoir;
 using InventoryManagement.UI.Achat;
+using InventoryManagement.Data;
 
 namespace InventoryManagement.UI
 {
@@ -25,12 +26,16 @@ namespace InventoryManagement.UI
        
         private Button currentActiveButton;
         private readonly IFormManager _formFactory;
+        private readonly AppDbContext _appContext;
         private Panel currentFormPanel;
-        public MainDashboard(IFormManager formFactory)
+        private readonly GetTotal _getTotal;
+        public MainDashboard(IFormManager formFactory, AppDbContext appDbContext, GetTotal getTotal )
         {
             InitializeComponent();
-            ShowDashboardHome();
             _formFactory = formFactory;
+            _appContext = appDbContext;
+            _getTotal = getTotal;
+            ShowDashboardHome();
         }
 
         private void BtnUsers_Click(object sender, EventArgs e)
@@ -81,7 +86,8 @@ namespace InventoryManagement.UI
                 new { Type = InventoryManagement.Repositorys.ReferentielType.Categorie, Name = "Catégories", Icon = "📁", Color = Color.FromArgb(52, 152, 219) },
                 new { Type = InventoryManagement.Repositorys.ReferentielType.Unite, Name = "Unités", Icon = "⚖️", Color = Color.FromArgb(46, 204, 113) },
                 new { Type = InventoryManagement.Repositorys.ReferentielType.Nature, Name = "Natures", Icon = "🌱", Color = Color.FromArgb(155, 89, 182) },
-                new { Type = InventoryManagement.Repositorys.ReferentielType.Marque, Name = "Marques", Icon = "🏷️", Color = Color.FromArgb(230, 126, 34) }
+                new { Type = InventoryManagement.Repositorys.ReferentielType.Marque, Name = "Marques", Icon = "🏷️", Color = Color.FromArgb(230, 126, 34) },
+                new { Type = InventoryManagement.Repositorys.ReferentielType.Caisse, Name = "Caisses", Icon = "🏦", Color = Color.FromArgb(231, 76, 60) }
             };
 
             for (int i = 0; i < types.Length; i++)
@@ -120,7 +126,7 @@ namespace InventoryManagement.UI
                     
                     listForm.OnAdd += async (dto) => {
                         try {
-                              repo.Insert(dto);
+                             await repo.Insert(dto);
                             // Optional: Reload list to get IDs if needed
                         } catch(Exception ex) {
                             MessageBox.Show("Erreur lors de l'ajout : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -129,15 +135,15 @@ namespace InventoryManagement.UI
 
                     listForm.OnEdit += async (dto) => {
                         try {
-                            repo.Update(dto, dto.Id);
+                            await repo.Update(dto, dto.Id);
                         } catch(Exception ex) {
                             MessageBox.Show("Erreur lors de la modification : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     };
 
-                    listForm.OnDelete +=  (dto) => {
+                    listForm.OnDelete += async (dto) => {
                         try {
-                            repo.Delete(dto.Id);
+                            await repo.Delete(dto.Id);
                             return true;
                         } catch(Exception ex) {
                             MessageBox.Show("Erreur lors de la suppression : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -199,7 +205,7 @@ namespace InventoryManagement.UI
         private void BtnProducts_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnProducts);
-            LoadFormInPanel(new ListeProduits(_formFactory));
+            LoadFormInPanel(new ListeProduits(_formFactory, _appContext));
         }
         private void BtnCategories_Click(object sender, EventArgs e)
         {
@@ -231,17 +237,21 @@ namespace InventoryManagement.UI
         }
         private void BtnPurchases_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            SetActiveButton(btnPurchases);          
+            LoadFormInPanel(new ListeAchats(_formFactory, _appContext));
+
         }
         private void BtnSales_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnSales);
-            LoadFormInPanel(new ListeVentes(_formFactory));
+            LoadFormInPanel(new ListeVentes(_formFactory, _appContext));
+           
         }
         private void BtnClients_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnClients);
-            LoadFormInPanel(new ListeClient(_formFactory));
+            LoadFormInPanel(new ListeClient(_formFactory, _appContext));
+            
         }
         private void BtnDashboard_Click(object sender, EventArgs e)
         {
@@ -280,7 +290,7 @@ namespace InventoryManagement.UI
 
             mainContentPanel.Controls.Add(currentFormPanel);
         }
-        private void CreateDashboardCards(Panel parentPanel)
+        private async void CreateDashboardCards(Panel parentPanel)
         {
             int cardWidth = 280;
             int cardHeight = 180;
@@ -289,7 +299,7 @@ namespace InventoryManagement.UI
             int startY = 100;
 
             // Products Card
-            string productCount = "100";
+            string productCount = await  _getTotal.GetTotalProductCount();
             Panel productsCard = CreateDashboardCard(
                 "Produits",
                 productCount,

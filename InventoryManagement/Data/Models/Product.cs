@@ -1,4 +1,5 @@
 ﻿using InventoryManagement.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace InventoryManagement.Data.Models
 {
+
     public class Product : FullAuditedEntity
     {
         [MaxLength(100)]

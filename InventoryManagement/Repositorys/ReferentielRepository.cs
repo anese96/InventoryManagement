@@ -14,10 +14,10 @@ namespace InventoryManagement.Repositorys
     /// <summary>
     /// Identifies which referentiel table to target.
     /// </summary>
-    public enum ReferentielType { Categorie, Unite, Nature, Marque }
+    public enum ReferentielType { Categorie, Unite, Nature, Marque, Caisse }
 
     /// <summary>
-    /// Generic repository for all simple BaseEntity referentiels (Catégorie, Unité, Nature, Marque).
+    /// Generic repository for all simple BaseEntity referentiels (Catégorie, Unité, Nature, Marque, Caisse).
     /// One instance per tab — the caller supplies <see cref="ReferentielType"/> to choose the table.
     /// </summary>
     public class ReferentielRepository : IRepository<ReferentielDto>
@@ -45,6 +45,8 @@ namespace InventoryManagement.Repositorys
                 ReferentielType.Unite     => await _db.Units     .FindAsync(id),
                 ReferentielType.Nature    => await _db.Natures   .FindAsync(id),
                 ReferentielType.Marque    => await _db.Marques   .FindAsync(id),
+                ReferentielType.Caisse    => await _db.Crates   .FindAsync(id),
+
                 _ => throw new NotSupportedException()
             };
         }
@@ -57,6 +59,7 @@ namespace InventoryManagement.Repositorys
                 ReferentielType.Unite     => new Unit     { Name = dto.Name },
                 ReferentielType.Nature    => new Nature   { Name = dto.Name },
                 ReferentielType.Marque    => new Marque   { Name = dto.Name },
+                ReferentielType.Caisse    => new Crates    { Name = dto.Name },
                 _ => throw new NotSupportedException()
             };
         }
@@ -69,12 +72,13 @@ namespace InventoryManagement.Repositorys
                 ReferentielType.Unite     => (await _db.Units     .ToListAsync()).Cast<BaseEntity>().ToList(),
                 ReferentielType.Nature    => (await _db.Natures   .ToListAsync()).Cast<BaseEntity>().ToList(),
                 ReferentielType.Marque    => (await _db.Marques   .ToListAsync()).Cast<BaseEntity>().ToList(),
+                ReferentielType.Caisse    => (await _db.Crates   .ToListAsync()).Cast<BaseEntity>().ToList(),
                 _ => throw new NotSupportedException()
             };
         }
 
         private static ReferentielDto ToDto(BaseEntity e)
-            => new ReferentielDto { Name = ((BaseEntity)e).Name };
+            => new ReferentielDto { Id = e.Id, Name = e.Name };
 
         // ── IRepository<ReferentielDto> ───────────────────────────────────────
 
@@ -86,6 +90,7 @@ namespace InventoryManagement.Repositorys
             var entity = CreateEntity(dto);
             _db.Add(entity);
             await _db.SaveChangesAsync();
+            dto.Id = entity.Id;
         }
 
         public async Task Update(ReferentielDto dto, int id)

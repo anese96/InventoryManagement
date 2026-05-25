@@ -40,6 +40,8 @@ namespace InventoryManagement.Repositorys
                 PhoneNumber = client.PhoneNumber,
                 Address = client.Address,
                 Remark= client.Remark,
+                Balance = client.Balance,
+                Turnover = client.Turnover
             };
         }
 
@@ -54,6 +56,8 @@ namespace InventoryManagement.Repositorys
                 PhoneNumber = entity.PhoneNumber,
                 Address = entity.Address,
                 Remark=entity.Remark,
+                Balance = 0,
+                Turnover = 0
            };
             await _appContext.Customers.AddAsync(client);
             await _appContext.SaveChangesAsync();
@@ -78,6 +82,27 @@ namespace InventoryManagement.Repositorys
         public Task Delete(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task UpdateBalance(int Id, decimal balance)
+        {
+            var client = await _appContext.Customers.FindAsync(Id);
+            if (client == null)
+            {
+                throw new ArgumentException("Client not found.");
+            }
+            client.Balance += balance;
+            await _appContext.SaveChangesAsync();
+        }
+        public async Task UpdateTurnover(int Id, decimal turnover)
+        {
+            var client = await _appContext.Customers.FindAsync(Id);
+            if (client == null)
+            {
+                throw new ArgumentException("Client not found.");
+            }
+            client.Turnover += turnover;
+            await _appContext.SaveChangesAsync();
         }
 
     }

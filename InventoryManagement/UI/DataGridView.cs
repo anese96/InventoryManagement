@@ -52,9 +52,12 @@ namespace InventoryManagement.UI
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
+               SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+               MultiSelect = false,
+               RowHeadersVisible = false,
+             
             };
-            
+
             parentControl.Controls.Add(Grid);
 
             Grid.DataSource = bs;
@@ -102,6 +105,8 @@ namespace InventoryManagement.UI
             Grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 66, 91);
             Grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             Grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            Grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(45, 66, 91);
+            Grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
 
             Grid.DefaultCellStyle.Font = new Font("Segoe UI", 10);
             Grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);

@@ -1,6 +1,9 @@
-﻿using InventoryManagement.Data.DTO;
+﻿using InventoryManagement.Data;
+using InventoryManagement.Data.DTO;
 using InventoryManagement.InterfacesRepositorys;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Repositorys;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,30 +15,53 @@ namespace InventoryManagement.Services
     public class SalesInvoiceLineService : IService<SalesInvoiceLineDto>
     {
         private readonly IRepository<SalesInvoiceLineDto> _repository;
+        private readonly AppDbContext _appContext;
 
-        public SalesInvoiceLineService(IRepository<SalesInvoiceLineDto> repository)
+        public SalesInvoiceLineService(IRepository<SalesInvoiceLineDto> repository,  AppDbContext  appDbContext)
         {
             _repository=repository;
+            _appContext = appDbContext;
         }
         public async Task AddAsync(SalesInvoiceLineDto entity)
         {
-           if (entity.IdSalesInvoice == null || entity.RefProduct==null|| entity.RefProduct =="" 
-                ||entity.Designation==null || entity.Designation=="" || entity.Quantity==null|| entity.Quantity<0
-                || entity.Price==null||entity.Price<0 ||entity.Taxe==null ||entity.TotalWithoutTax==null||entity.TotalWithoutTax<0)
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (entity.IdSalesInvoice <= 0 ||
+                string.IsNullOrWhiteSpace(entity.RefProduct) ||
+                string.IsNullOrWhiteSpace(entity.Designation) ||
+                entity.Quantity <= 0 ||
+                entity.Price < 0 ||
+               
+                entity.TotalWithoutTax < 0)
             {
-                throw new ArgumentException("Un Champ Vide.");
+                throw new ArgumentException("Un ou plusieurs champs sont invalides.");
             }
+
+            // Recherche du produit
+            var product = await _appContext.Products
+                .FirstOrDefaultAsync(x => x.Id == entity.IdProduct);
+
+            if (product == null)
+                throw new Exception("Produit introuvable.");
+
+            // Vérification du stock
+            if (product.StockQuantity < entity.Quantity)
+            {
+                throw new Exception("Quantité insuffisante en stock.");
+            }
+
             await _repository.Insert(entity);
         }
 
-        public Task DeleteAsynct(int id)
+        public async Task DeleteAsynct(int id)
         {
-            throw new NotImplementedException();
+             await _repository.Delete(id);
         }
 
-        public Task<List<SalesInvoiceLineDto>> GetAllAsyncs()
+        public async Task<List<SalesInvoiceLineDto>> GetAllAsyncs()
         {
-            throw new NotImplementedException();
+            return await _repository.GetAll();
         }
 
         public async Task<SalesInvoiceLineDto> GetAsyncById(int id)

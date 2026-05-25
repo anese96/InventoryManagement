@@ -17,10 +17,12 @@ namespace InventoryManagement.UI.Client
         DataGridHelper helper;
         private readonly IFormManager _formFactory;
         private DataGridView dgvClients;
-        public ListeClient(IFormManager formManager)
+        private readonly AppDbContext _appContext;
+        public ListeClient(IFormManager formManager, AppDbContext appContext)
         {           
             InitializeComponent();
             _formFactory = formManager;
+            _appContext = appContext;
             InitializeCustomComponents();
         }
 
@@ -100,8 +102,8 @@ namespace InventoryManagement.UI.Client
 
         private void LoadData()
         {
-            var db = new AppDbContext();
-            var customers = db.Customers.Select(p => new
+           
+            var customers = _appContext.Customers.Select(p => new
             {
                 ID = p.Id,
                 Reference=p.RefCustomer,

@@ -6,10 +6,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+//using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InventoryManagement.UI.Vente
 {
@@ -17,10 +18,12 @@ namespace InventoryManagement.UI.Vente
     {
         DataGridHelper helper;
         private readonly IFormManager _formFactory;
+        private readonly AppDbContext _appContext;
         private DataGridView dvgVentes;
-        public ListeVentes(IFormManager formManager )
+        public ListeVentes(IFormManager formManager, AppDbContext appDbContext)
         {
             _formFactory = formManager;
+            _appContext = appDbContext;
             InitializeComponent();
             InitializeCustomComponents();
         }
@@ -88,17 +91,17 @@ namespace InventoryManagement.UI.Vente
 
         private void LoadData()
         {
-            var db = new AppDbContext();
-            var salesInvoices = db.SalesInvoices.Select(v => new
+          
+            var salesInvoices = _appContext.SalesInvoices.Select(v => new
             {
                ID = v.Id,
-               NumberInvoice=v.NumberInvoice,
-               DateInvoice=v.DateInvoice,
+                N_Facture = v.NumberInvoice,
+                Date = v.DateInvoice,
                Client=v.Customer.Name,
-               TotalWithoutTax=v.TotalWithoutTax,
-               Remise= v.Remise,
-               TotalInvoice= v.TotalInvoice,
-               PaymentInvoice=v.PaymentInvoice
+                Total_HT = v.TotalWithoutTax,
+                Remise = v.Remise,
+                Total_TTC = v.TotalInvoice,
+                Montant_Payé = v.PaymentInvoice
             }).ToList();
 
             helper.SetData(salesInvoices);

@@ -7,6 +7,7 @@ using InventoryManagement.Logger;
 using InventoryManagement.Repositorys;
 using InventoryManagement.Services;
 using InventoryManagement.UI;
+using InventoryManagement.UI.Achat;
 using InventoryManagement.UI.Client;
 using InventoryManagement.UI.Fournisseur;
 using InventoryManagement.UI.Produit;
@@ -41,39 +42,47 @@ namespace InventoryManagement
             services.AddDbContext<AppDbContext>(options =>
             options.UseSqlite("Data Source=InventoryManagement.db"));
 
-            services.AddScoped<AddEntityBD>();
-            services.AddScoped<IRepository<ProduitDto>, ProduitRepository>();
-            services.AddScoped<IService<ProduitDto>, ProduitService>();
+            services.AddTransient<AddEntityBD>();
+            services.AddTransient<IRepository<ProduitDto>, ProduitRepository>();
+            services.AddTransient<IService<ProduitDto>, ProduitService>();
 
-            services.AddScoped<IRepository<ClientDto>, ClientRepository>();
-            services.AddScoped<IService<ClientDto>, ClientService>();
+            services.AddTransient<IRepository<ClientDto>, ClientRepository>();
+            services.AddTransient<IService<ClientDto>, ClientService>();
 
-            services.AddScoped<IRepository<VendorDto>,VendorRepository>();
-            services.AddScoped<IService<VendorDto>, VendorService>();
+            services.AddTransient<IRepository<VendorDto>,VendorRepository>();
+            services.AddTransient<IService<VendorDto>, VendorService>();
 
-            services.AddScoped<IRepository<SalesInvoicesDto>,SalesInvoicesRepository>();
-            services.AddScoped<IService<SalesInvoicesDto>, SalesInvoicesService>();
+            services.AddTransient<IRepository<SalesInvoicesDto>,SalesInvoicesRepository>();
+            services.AddTransient<IService<SalesInvoicesDto>, SalesInvoicesService>();
+            services.AddTransient<IRepository<SalesInvoiceLineDto>,SalesInvoiceLineRepository>();
+            services.AddTransient<IService<SalesInvoiceLineDto>, SalesInvoiceLineService>();
 
-            services.AddScoped<IRepository<SalesInvoiceLineDto>,SalesInvoiceLineRepository>();
-            services.AddScoped<IService<SalesInvoiceLineDto>, SalesInvoiceLineService>();
-
+            services.AddTransient<IRepository<PaymentCustomerDto>,PaymentCustomerRepository>();
+            services.AddTransient<IService<PaymentCustomerDto>, PaymentCustomerService>();
 
             /// Ajouter  -------------------------------------------------
             services.AddTransient<AjouterProduit>();
             services.AddTransient<AjouterClient>();
             services.AddTransient<AjouterFournisseur>();
             services.AddTransient<AjouterVente>();
-
+            services.AddTransient<AjouterPayment>();
+            services.AddTransient<AjouterAchat>();
+           
 
             /// Modifier ----------------------------------------------------
             services.AddTransient<ModifierProduit>(); 
             services.AddTransient<ModifierClient>(); 
             services.AddTransient<ModifierVente>();
 
+
+           
+            services.AddTransient<GetTotal>();
             services.AddTransient<MainDashboard>();
             services.AddSingleton<FunctionUI>();
-            services.AddSingleton<ProduitRepository>();
-            services.AddSingleton<IFormManager , FormFactory>();
+            services.AddTransient<ProduitRepository>();
+            services.AddTransient<ClientService>();
+            services.AddTransient<ClientRepository>();
+            services.AddTransient<IFormManager , FormFactory>();
             
          
 

@@ -1,5 +1,6 @@
 using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
+using InventoryManagement.Data.Entity;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
 using Microsoft.EntityFrameworkCore;
@@ -13,8 +14,30 @@ namespace InventoryManagement.UI
 {
     public abstract class SalePurchaseForm : Form
     {
-       // private readonly IService<SalesInvoicesDto> _service;
- 
+        // private readonly IService<SalesInvoicesDto> _service;
+        public readonly AppDbContext _appContext;
+        private Label lblHeader;
+        private Label lblClient;
+        private string _title;
+        private string _Client_Fournisseur;
+        public string Title 
+        {
+            get => _title;
+            set 
+            {
+                _title = value;
+                if (lblHeader != null) lblHeader.Text = _title;
+            }
+        }
+        public string Client_Fournisseur
+        {
+            get => _Client_Fournisseur;
+            set 
+            {
+                _Client_Fournisseur = value;
+                if (lblClient != null) lblClient.Text = _Client_Fournisseur;
+            }
+        }
         private readonly FunctionUI _functionUI;
         public TextBox cmbClient;
         public TextBox txtNumFacture;
@@ -27,22 +50,65 @@ namespace InventoryManagement.UI
 
         private AutoCompleteStringCollection refCollection = new AutoCompleteStringCollection();
         private AutoCompleteStringCollection descCollection = new AutoCompleteStringCollection();
-        public SalePurchaseForm( FunctionUI functionUI)
+        public SalePurchaseForm( FunctionUI functionUI, AppDbContext appDbContext )
         {
             _functionUI = functionUI;
-            InitializeCustomComponents();
-            BtnAddRow_Click(null, null);
-        //    LoadAllData();
+            _appContext = appDbContext;
+            InitializeCustomComponents();        
         }
 
-     
 
+        public bool CheckdgvArticlesRows()
+        {
+            
+            foreach (DataGridViewRow row in dgvArticles.Rows)
+            {
+            var RefProduct = row.Cells["RefProduit"].Value?.ToString();
+            var Designation = row.Cells["Designation"].Value?.ToString();
+               
+
+                if (string.IsNullOrWhiteSpace(RefProduct) && string.IsNullOrWhiteSpace(Designation))
+                {
+                    MessageBox.Show(
+                        "Veuillez remplir la référence ou la désignation de tous les articles!",
+                        "Validation",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return false;
+                }
+                // Vérification du stock
+                var product = _appContext.Products
+              .FirstOrDefault(x => x.Id == Convert.ToInt32(row.Cells["IdProduct"].Value));
+                if (product.StockQuantity < Convert.ToDecimal(row.Cells["Qte"].Value ?? 0))
+                {
+                    MessageBox.Show(
+           $"Stock insuffisant pour le produit : {product.Designation}",
+           "Stock",
+           MessageBoxButtons.OK,
+           MessageBoxIcon.Warning);
+
+                    return false;
+                }
+            }
+            if (dgvArticles.Rows.Count == 0 || string.IsNullOrWhiteSpace(txtNumFacture.Text))
+            {
+                MessageBox.Show(
+                    "Veuillez ajouter au moins un article!",
+                    "Validation",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return false;
+            }
+
+            return true;
+        }
         private void InitializeCustomComponents()
         {
             // Load autocomplete data from database
             LoadAutocompleteData();
 
-            this.Text = "Nouvelle Vente";
+            this.Text = "Vente";
             this.Size = new Size(1250, 850);
             this.StartPosition = FormStartPosition.CenterParent;
             //this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -62,9 +128,9 @@ namespace InventoryManagement.UI
             int yPosition = 10;
 
             // Header
-            Label lblHeader = new Label
+            lblHeader = new Label
             {
-                Text = "💰 NOUVELLE VENTE",
+                Text = "💰 "+ Title,
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = Color.FromArgb(44, 62, 80),
                 AutoSize = true,
@@ -94,9 +160,9 @@ namespace InventoryManagement.UI
             entetePanel.Controls.Add(lblEntete);
 
             // Client
-            Label lblClient = new Label
+             lblClient = new Label
             {
-                Text = "Client:",
+                Text = Client_Fournisseur,
                 Font = new Font("Segoe UI", 10),
                 Location = new Point(20, 35),
                 Size = new Size(80, 25),
@@ -113,9 +179,9 @@ namespace InventoryManagement.UI
             };
             entetePanel.Controls.Add(cmbClient);
 
-            using (var db = new AppDbContext())
-            {
-                var customerNames = db.Customers
+     
+         
+                var customerNames = _appContext.Customers
                                       .Select(c => c.Name)
                                       .ToArray();
                 var source = new AutoCompleteStringCollection();
@@ -123,7 +189,7 @@ namespace InventoryManagement.UI
                 cmbClient.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 cmbClient.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 cmbClient.AutoCompleteCustomSource = source;
-            }
+          
 
 
 
@@ -211,7 +277,7 @@ namespace InventoryManagement.UI
             dgvArticles = new DataGridView
             {
                 Location = new Point(60, yPosition),
-                Size = new Size(1200, 300),
+                Size = new Size(1400, 300),
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 AllowUserToAddRows = false,
@@ -230,19 +296,21 @@ namespace InventoryManagement.UI
             dgvArticles.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(52, 152, 219);
             dgvArticles.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvArticles.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+            dgvArticles.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(52, 152, 219);
+            dgvArticles.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
             dgvArticles.EnableHeadersVisualStyles = false;
 
 
             dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", Name = "IdProduct" });
             dgvArticles.Columns["IdProduct"].Visible = false;
-            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Réf Produit", Name = "RefProduit" });
-            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Désignation", Name = "Designation", Width = 300 });
+            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Réf Produit", Name = "RefProduit" , FillWeight=150});
+            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Désignation", Name = "Designation", FillWeight = 300 });
             dgvArticles.Columns.Add(new DataGridViewComboBoxColumn { HeaderText = "Tarification", Name = "Tarification", Width = 150, FlatStyle = FlatStyle.Flat });
-            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Qte", Name = "Qte" });
+            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Qte", Name = "Qte", FillWeight = 50 });
             dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Prix", Name = "Prix" });
 
-            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Qte Pack", Name = "QtePack" });
-            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "TVA", Name = "TVA", ReadOnly = true });
+            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Qte Pack", Name = "QtePack" , FillWeight = 70 });
+            dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "TVA", Name = "TVA", ReadOnly = true , FillWeight = 50 });
             dgvArticles.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Total HT", Name = "TotalHT", ReadOnly = true });
 
             DataGridViewButtonColumn btnDelete = new DataGridViewButtonColumn
@@ -306,7 +374,7 @@ namespace InventoryManagement.UI
             numTotalHT.BackColor = Color.FromArgb(236, 240, 241);
 
             // Remise
-           AddPiedField(piedPanel, "Remise:", ref piedY, labelWidth, fieldWidth, out numRemise);
+            AddPiedField(piedPanel, "Remise:", ref piedY, labelWidth, fieldWidth, out numRemise);
             numRemise.ValueChanged += CalculateTotals;
 
             // Total HT Remisé
@@ -343,7 +411,10 @@ namespace InventoryManagement.UI
 
             yPosition += 210;
 
-
+                var crates = _appContext.Crates.ToList();
+                cbxCaisse.DataSource = crates;
+                cbxCaisse.DisplayMember = "Name";
+                cbxCaisse.ValueMember = "Id";
 
 
             // ========== BUTTONS ==========
@@ -386,25 +457,25 @@ namespace InventoryManagement.UI
             buttonPanel.Controls.Add(btnCancel);
         }
 
-        private void DgvArticles_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        public virtual void DgvArticles_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
             DataGridViewRow row = dgvArticles.Rows[e.RowIndex];
             string colName = dgvArticles.Columns[e.ColumnIndex].Name;
 
-            using (var db = new AppDbContext())
+            
             {
                 Product product = null;
 
                 if (colName == "RefProduit")
                 {
                     string val = row.Cells["RefProduit"].Value?.ToString()?.ToLower();
-                    product = db.Products.FirstOrDefault(p => p.RefProduct.ToLower() == val);
+                    product = _appContext.Products.FirstOrDefault(p => p.RefProduct.ToLower() == val);
                 }
                 else if (colName == "Designation")
                 {
                     string val = row.Cells["Designation"].Value?.ToString()?.ToLower();
-                    product = db.Products.FirstOrDefault(p => p.Designation.ToLower() == val);
+                    product = _appContext.Products.FirstOrDefault(p => p.Designation.ToLower() == val);
                 }
                 else if (colName == "Tarification")
                 {
@@ -429,7 +500,7 @@ namespace InventoryManagement.UI
                     // Populate Tarification
                     try
                     {
-                        var priceLists = db.PriceLists.Where(pl => pl.ProductId == product.Id).ToList();
+                        var priceLists = _appContext.PriceLists.Where(pl => pl.ProductId == product.Id).ToList();
                         var options = new System.Collections.Generic.List<PriceOption>();
                         options.Add(new PriceOption { Display = $"Standard ({product.SalesPrice:N2})", Value = product.SalesPrice });
                         foreach (var pl in priceLists)
@@ -462,7 +533,7 @@ namespace InventoryManagement.UI
             public string Display { get; set; }
             public decimal? Value { get; set; }
         }
-        private void CalculateTotals(object sender, EventArgs e)
+        public void CalculateTotals(object? sender, EventArgs? e)
         {
             decimal totalHT = 0;
             decimal totalTVA = 0;
@@ -651,7 +722,7 @@ namespace InventoryManagement.UI
                 CalculateTotals(null, null);
             }
         }
-        private void UpdateRowTotal(DataGridViewRow row)
+        public void UpdateRowTotal(DataGridViewRow row)
         {
             if (row.Cells["Qte"].Value != null && row.Cells["Prix"].Value != null)
             {
@@ -672,9 +743,9 @@ namespace InventoryManagement.UI
 
                 if (decimal.TryParse(qtePackObj.ToString(), out decimal qtePack))
                 {
-                    using (var db = new AppDbContext())
+                   
                     {
-                        var product = db.Products.AsNoTracking().FirstOrDefault(p => p.RefProduct == refProduct);
+                        var product = _appContext.Products.AsNoTracking().FirstOrDefault(p => p.RefProduct == refProduct);
                         if (product != null && product.Colisage.HasValue && product.Colisage.Value > 0)
                         {
                             row.Cells["Qte"].Value = (qtePack * product.Colisage.Value).ToString("G29");
@@ -699,22 +770,21 @@ namespace InventoryManagement.UI
             }
         }
 
-      
 
-        private void BtnAddRow_Click(object sender, EventArgs e)
+        public  void BtnAddRow_Click(object sender, EventArgs e)
         {
-            // IdProduct (hidden), Ref, Desig, Tarif, Qte, Prix, QtePack, TVA, TotalHT
             int rowIndex = dgvArticles.Rows.Add("", "", "", null, "1", "0.00", "0", "0%", "0.00");
             dgvArticles.CurrentCell = dgvArticles.Rows[rowIndex].Cells["RefProduit"];
             dgvArticles.BeginEdit(true);
         }
 
+
         public void LoadAutocompleteData()
         {
-            using (var db = new AppDbContext())
+          
             {
 
-                var products = db.Products
+                var products = _appContext.Products
                         .Select(p => new { p.RefProduct, p.Designation })
                         .AsNoTracking()
                         .ToList();

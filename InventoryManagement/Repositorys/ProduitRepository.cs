@@ -44,6 +44,7 @@ namespace InventoryManagement.Repositorys
             }
             await _appContext.SaveChangesAsync();
         }
+
         public async Task Insert(ProduitDto entity)
         {
             var produit = new Product
