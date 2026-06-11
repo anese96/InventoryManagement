@@ -23,12 +23,17 @@ namespace InventoryManagement.UI.Client
         private readonly IService<PaymentCustomerDto> _service;
         private int _idCustomer;
 
-        private TextBox txtNumberPayment, txtAmount;
-        private DateTimePicker dtpDate;
-        private ComboBox cbCaisse;
+        public TextBox txtNumberPayment, txtAmount;
+        public DateTimePicker dtpDate;
+        public ComboBox cbCaisse;
+        private int idVendor;
+        private IService<PaymentVendorDto> service;
+        private AppDbContext appDbContext;
+        private VendorService vendorService;
         private readonly ClientService _clientService;
 
-        public AjouterPayment(int idCustomer, FunctionUI functionUI, IService<PaymentCustomerDto> service, AppDbContext appDbContext, ClientService clientService)
+        public AjouterPayment(int idCustomer, FunctionUI functionUI, IService<PaymentCustomerDto> service,
+            AppDbContext appDbContext, ClientService clientService)
         {
             _idCustomer = idCustomer;
              _functionUI = functionUI;
@@ -38,6 +43,9 @@ namespace InventoryManagement.UI.Client
             InitializeComponent();
             InitializeCustomComponents();
         }
+
+     
+
         private void InitializeCustomComponents()
         {
             this.Text = "Ajouter un Paiement";
@@ -164,7 +172,7 @@ namespace InventoryManagement.UI.Client
 
         }
 
-        private async void BtnSave_Click(object? sender, EventArgs e)
+        public virtual async void BtnSave_Click(object? sender, EventArgs e)
         {
             try
             {

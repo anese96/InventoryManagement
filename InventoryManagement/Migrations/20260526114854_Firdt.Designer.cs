@@ -3,6 +3,7 @@ using System;
 using InventoryManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260526114854_Firdt")]
+    partial class Firdt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -264,9 +267,6 @@ namespace InventoryManagement.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("IdCrates")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("IdVendor")
                         .HasColumnType("INTEGER");
 
@@ -288,8 +288,6 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdCrates");
 
                     b.HasIndex("IdVendor");
 
@@ -352,9 +350,6 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsFavorite")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastModificationTime")
@@ -899,19 +894,11 @@ namespace InventoryManagement.Migrations
 
             modelBuilder.Entity("InventoryManagement.Data.Models.PaymentVendor", b =>
                 {
-                    b.HasOne("InventoryManagement.Data.Models.Crates", "Crates")
-                        .WithMany()
-                        .HasForeignKey("IdCrates")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("InventoryManagement.Data.Models.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("IdVendor")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Crates");
 
                     b.Navigation("Vendor");
                 });

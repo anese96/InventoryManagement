@@ -76,7 +76,7 @@ namespace InventoryManagement.UI.Achat
             btnAddProduct.Click += (s, e) =>
             {
                 _formFactory.Open<AjouterAchat>();
-               // LoadData();
+                LoadData();
             };
             actionPanel.Controls.Add(btnAddProduct);
 
@@ -85,9 +85,42 @@ namespace InventoryManagement.UI.Achat
             //------------------------------------------------------
             helper = new DataGridHelper(this);
             dvgVentes = helper.Grid;
-          //  dvgVentes.CellDoubleClick += Grid_CellDoubleClick;
+            dvgVentes.CellDoubleClick += Grid_CellDoubleClick;
 
-           // LoadData();
+            LoadData();
+        }
+
+        private void LoadData()
+        {
+
+            var salesInvoices = _appDbContext.Purchases.Select(v => new
+            {
+                ID = v.Id,
+                N_Facture = v.NumberPurchase,
+                Date = v.DatePurchase,
+                Client = v.Vendor.Name,
+                Total_HT = v.TotalWithoutTax,
+                Remise = v.Remise,
+                Total_TTC = v.TotalPurchase,
+                Montant_Payé = v.PaymentPurchase
+            }).ToList();
+
+            helper.SetData(salesInvoices);
+            if (dvgVentes.Columns["ID"] != null) dvgVentes.Columns["ID"].Visible = false;
+
+        }
+
+        private void Grid_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                if (dvgVentes.SelectedRows.Count == 0) return;
+                var row = dvgVentes.SelectedRows[0];
+                if (row.Cells["ID"].Value == null) return;
+                int id = Convert.ToInt32(row.Cells["ID"].Value);
+                _formFactory.Open<ModifierAchat>(id);
+                LoadData();
+            }
         }
     }
 }

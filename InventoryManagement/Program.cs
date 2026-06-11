@@ -12,6 +12,7 @@ using InventoryManagement.UI.Client;
 using InventoryManagement.UI.Fournisseur;
 using InventoryManagement.UI.Produit;
 using InventoryManagement.UI.Vente;
+using InventoryManagement.UI.VentesComptoir;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -54,11 +55,26 @@ namespace InventoryManagement
 
             services.AddTransient<IRepository<SalesInvoicesDto>,SalesInvoicesRepository>();
             services.AddTransient<IService<SalesInvoicesDto>, SalesInvoicesService>();
+
             services.AddTransient<IRepository<SalesInvoiceLineDto>,SalesInvoiceLineRepository>();
             services.AddTransient<IService<SalesInvoiceLineDto>, SalesInvoiceLineService>();
 
+            services.AddTransient<IRepository<PurchaseDto>,PurchaseRepository>();
+            services.AddTransient<IService<PurchaseDto>, PurchaseService>();
+
+            services.AddTransient<IRepository<PurchaseLineDto>,PurchaseLineRepository>();
+            services.AddTransient<IService<PurchaseLineDto>, PurchaseLineService>();
+
             services.AddTransient<IRepository<PaymentCustomerDto>,PaymentCustomerRepository>();
             services.AddTransient<IService<PaymentCustomerDto>, PaymentCustomerService>();
+
+            services.AddTransient<IRepository<PaymentVendorDto>,PaymentVendorRepository>();
+            services.AddTransient<IService<PaymentVendorDto>, PaymentVendorService>();
+
+   
+
+           
+
 
             /// Ajouter  -------------------------------------------------
             services.AddTransient<AjouterProduit>();
@@ -67,12 +83,17 @@ namespace InventoryManagement
             services.AddTransient<AjouterVente>();
             services.AddTransient<AjouterPayment>();
             services.AddTransient<AjouterAchat>();
+            services.AddTransient<AjouterPaymentFournisseur>();
+            services.AddTransient<AjouterVentesComptoir>();
+            services.AddTransient<Qte__Prix>();
            
 
             /// Modifier ----------------------------------------------------
             services.AddTransient<ModifierProduit>(); 
             services.AddTransient<ModifierClient>(); 
             services.AddTransient<ModifierVente>();
+            services.AddTransient<ModifierAchat>();
+            services.AddTransient<ModifierFournisseur>();
 
 
            
@@ -80,8 +101,10 @@ namespace InventoryManagement
             services.AddTransient<MainDashboard>();
             services.AddSingleton<FunctionUI>();
             services.AddTransient<ProduitRepository>();
-            services.AddTransient<ClientService>();
+            services.AddTransient<ClientService>();           
             services.AddTransient<ClientRepository>();
+            services.AddTransient<VendorService>();
+            services.AddTransient<VendorRepository>();
             services.AddTransient<IFormManager , FormFactory>();
             
          

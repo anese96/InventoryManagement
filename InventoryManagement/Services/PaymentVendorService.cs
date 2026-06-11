@@ -11,21 +11,23 @@ using System.Threading.Tasks;
 
 namespace InventoryManagement.Services
 {
-    internal class PaymentCustomerService : IService<PaymentCustomerDto>
+    public class PaymentVendorService : IService<PaymentVendorDto>
     {
-        private readonly IRepository<PaymentCustomerDto> _repository;
+        private readonly IRepository<PaymentVendorDto> _repository;
       
         private readonly AppDbContext _appContext;
 
-        public PaymentCustomerService(IRepository<PaymentCustomerDto> repository,  AppDbContext appContext)
+        public PaymentVendorService(IRepository<PaymentVendorDto> repository, AppDbContext appContext)
         {
             _repository = repository;
+       
             _appContext = appContext;
         }
-        public async Task AddAsync(PaymentCustomerDto entity)
+        public async Task AddAsync(PaymentVendorDto entity)
         {
-           if( entity == null) {
-                throw new Exception("The client does not exist");
+            if (entity == null)
+            {
+                throw new Exception("The payment does not exist");
             }
             await _repository.Insert(entity);
         }
@@ -35,21 +37,21 @@ namespace InventoryManagement.Services
             throw new NotImplementedException();
         }
 
-        public async Task<List<PaymentCustomerDto>> GetAllAsyncs()
+        public async Task<List<PaymentVendorDto>> GetAllAsyncs()
         {
-           return await _repository.GetAll();
+            return await _repository.GetAll();
         }
 
-        public Task<PaymentCustomerDto> GetAsyncById(int id)
+        public Task<PaymentVendorDto> GetAsyncById(int id)
         {
-           if (id <= 0)
+            if (id <= 0)
             {
                 throw new ArgumentException("Invalid client ID.");
             }
             return _repository.GetById(id);
         }
 
-        public Task UpdateAsync(PaymentCustomerDto entity, int Id)
+        public Task UpdateAsync(PaymentVendorDto entity, int Id)
         {
             throw new NotImplementedException();
         }

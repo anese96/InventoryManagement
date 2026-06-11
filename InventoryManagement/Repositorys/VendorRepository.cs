@@ -45,6 +45,8 @@ namespace InventoryManagement.Repositorys
                 PhoneNumber = vendor.PhoneNumber,
                 Address = vendor.Address,
                 Remark = vendor.Remark,     
+                Balance = vendor.Balance,
+                Turnover= vendor.Turnover,
             };
         }
 
@@ -59,6 +61,8 @@ namespace InventoryManagement.Repositorys
                 PhoneNumber = entity.PhoneNumber,
                 Address = entity.Address,
                 Remark = entity.Remark,
+                Balance = 0,
+                Turnover = 0,
             };
             await _appContext.Vendors.AddAsync(vendor);
             await _appContext.SaveChangesAsync();
@@ -77,6 +81,26 @@ namespace InventoryManagement.Repositorys
             vendor.PhoneNumber = entity.PhoneNumber;
             vendor.Address = entity.Address;
             vendor.Remark = entity.Remark;
+            await _appContext.SaveChangesAsync();
+        }
+        public async Task UpdateBalance(int Id, decimal balance)
+        {
+            var vendor = await _appContext.Vendors.FindAsync(Id);
+            if (vendor == null)
+            {
+                throw new ArgumentException("Fournisseurs not found.");
+            }
+            vendor.Balance += balance;
+            await _appContext.SaveChangesAsync();
+        }
+        public async Task UpdateTurnover(int Id, decimal turnover)
+        {
+            var vendor = await _appContext.Vendors.FindAsync(Id);
+            if (vendor == null)
+            {
+                throw new ArgumentException("Fournisseurs not found.");
+            }
+            vendor.Turnover += turnover;
             await _appContext.SaveChangesAsync();
         }
     }

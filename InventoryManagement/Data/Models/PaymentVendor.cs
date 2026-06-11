@@ -25,6 +25,9 @@ namespace InventoryManagement.Data.Models
         [Column(TypeName = "decimal(18, 2)")]
         [Required]
         public decimal? Payment { get; set; } //  Montant
+        [ForeignKey(nameof(Crates))]
+        public int IdCrates { get; set; }
         public Vendor Vendor { get; set; }
+        public Crates Crates { get; set; }
     }
 }

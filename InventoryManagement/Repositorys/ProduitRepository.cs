@@ -63,7 +63,8 @@ namespace InventoryManagement.Repositorys
                 UnitId = entity.UnitId,
                 Colisage = entity.Colisage,
                 MarqueId = entity.MarqueId,
-                NatureId = entity.NatureId
+                NatureId = entity.NatureId,
+                IsFavorite= entity.IsFavorite
 
             };
             await _appContext.Products.AddAsync(produit);

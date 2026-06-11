@@ -213,11 +213,11 @@ namespace InventoryManagement.UI
         }   
         private void BtnDataSpreadsheets_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException();///tt
         }
         private void BtnCashFlow_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
         private void BtnCounterSales_Click(object sender, EventArgs e)
         {
@@ -233,7 +233,8 @@ namespace InventoryManagement.UI
         }
         private void BtnSuppliers_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            SetActiveButton(btnSuppliers);
+            LoadFormInPanel(new ListeFournisseur(_formFactory, _appContext));
         }
         private void BtnPurchases_Click(object sender, EventArgs e)
         {
@@ -312,10 +313,11 @@ namespace InventoryManagement.UI
             parentPanel.Controls.Add(productsCard);
 
             // Sales Card
+            string TotalVents = await _getTotal.GetTotalVents();
             string nomMois = DateTime.Now.ToString("MMMM", System.Globalization.CultureInfo.CurrentCulture);
             Panel salesCard = CreateDashboardCard(
                 "Ventes",
-               "100",
+               TotalVents,
                 "Ventes de " + nomMois,
                 Color.FromArgb(155, 89, 182),
                 new Point(startX + (cardWidth + spacing), startY),
@@ -325,9 +327,10 @@ namespace InventoryManagement.UI
             parentPanel.Controls.Add(salesCard);
 
             // Clients Card
+            string clientCount = await _getTotal.GetTotaClientCount();
             Panel clientsCard = CreateDashboardCard(
                 "Clients",
-                 "100",
+                 clientCount,
                 "Clients actifs",
                 Color.FromArgb(46, 204, 113),
                 new Point(startX + 2 * (cardWidth + spacing), startY),
@@ -339,9 +342,10 @@ namespace InventoryManagement.UI
 
 
             // Purchases Card
+            string TotalAchats = await _getTotal.GetTotalAchats();
             Panel purchasesCard = CreateDashboardCard(
                 "Achats",
-                "100",
+                TotalAchats,
                 "Achats de " + nomMois,
                 Color.FromArgb(230, 126, 34),
                 new Point(startX + 3 * (cardWidth + spacing), startY),

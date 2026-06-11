@@ -39,7 +39,9 @@ namespace InventoryManagement.UI.Client
         private DataGridView dgvSales;
         private DataGridView dgvPayments;
         private Button btnNewPayment;
-        public ModifierClient(int id, FunctionUI functionUI, IService<ClientDto> service, IService<PaymentCustomerDto> servicePay, IService<SalesInvoicesDto> SalesInvoicesService , IFormManager formManager, AppDbContext appDbContext)
+        public ModifierClient(int id, FunctionUI functionUI, IService<ClientDto> service,
+            IService<PaymentCustomerDto> servicePay, IService<SalesInvoicesDto> SalesInvoicesService ,
+            IFormManager formManager, AppDbContext appDbContext)
         {
             _id = id;   
             _functionUI = functionUI;

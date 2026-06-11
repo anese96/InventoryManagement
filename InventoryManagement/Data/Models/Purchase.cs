@@ -34,7 +34,11 @@ namespace InventoryManagement.Data.Models
         public decimal? PaymentPurchase { get; set; }
         [Column(TypeName = "decimal(18, 2)")]
         public decimal? BalancePurchase { get; set; }
+        [ForeignKey(nameof(Crates))]
+        public int? IdCrates { get; set; }
 
+
+        public Crates Crates { get; set; }
         public Vendor Vendor { get; set; }
 
         public List<PurchaseLine> PurchaseLines { get; set; }

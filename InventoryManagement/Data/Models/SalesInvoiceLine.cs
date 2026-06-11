@@ -16,6 +16,7 @@ namespace InventoryManagement.Data.Models
         [ForeignKey(nameof(SalesInvoice))]
         [Required]
         public int IdSalesInvoice { get; set; }
+        [ForeignKey(nameof(Product))]
         [Required]
         public int  IdProduct { get; set; }
         [MaxLength(100)]
@@ -40,5 +41,6 @@ namespace InventoryManagement.Data.Models
         public decimal TotalWithoutTax { get; set; }
 
         public SalesInvoices SalesInvoice { get; set; }
+        public Product Product { get; set; }
     }
 }

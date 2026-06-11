@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260523144347_new")]
-    partial class @new
+    [Migration("20260607072602_addIdCaissePaymentVendor")]
+    partial class addIdCaissePaymentVendor
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -267,6 +267,9 @@ namespace InventoryManagement.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("IdCrates")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("IdVendor")
                         .HasColumnType("INTEGER");
 
@@ -288,6 +291,8 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdCrates");
 
                     b.HasIndex("IdVendor");
 
@@ -424,6 +429,9 @@ namespace InventoryManagement.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("IdCrates")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("IdVendor")
                         .HasColumnType("INTEGER");
 
@@ -461,6 +469,8 @@ namespace InventoryManagement.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IdCrates");
+
                     b.HasIndex("IdVendor");
 
                     b.ToTable("Purchases");
@@ -477,6 +487,9 @@ namespace InventoryManagement.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("IdProduct")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("IdPurchase")
                         .HasColumnType("INTEGER");
 
@@ -488,7 +501,6 @@ namespace InventoryManagement.Migrations
 
                     b.Property<string>("RefProduct")
                         .IsRequired()
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Taxe")
@@ -499,6 +511,8 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdProduct");
 
                     b.HasIndex("IdPurchase");
 
@@ -699,6 +713,8 @@ namespace InventoryManagement.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IdProduct");
+
                     b.HasIndex("IdSalesInvoice");
 
                     b.ToTable("salesInvoiceLines");
@@ -883,11 +899,19 @@ namespace InventoryManagement.Migrations
 
             modelBuilder.Entity("InventoryManagement.Data.Models.PaymentVendor", b =>
                 {
+                    b.HasOne("InventoryManagement.Data.Models.Crates", "Crates")
+                        .WithMany()
+                        .HasForeignKey("IdCrates")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("InventoryManagement.Data.Models.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("IdVendor")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Crates");
 
                     b.Navigation("Vendor");
                 });
@@ -932,20 +956,34 @@ namespace InventoryManagement.Migrations
 
             modelBuilder.Entity("InventoryManagement.Data.Models.Purchase", b =>
                 {
+                    b.HasOne("InventoryManagement.Data.Models.Crates", "Crates")
+                        .WithMany()
+                        .HasForeignKey("IdCrates");
+
                     b.HasOne("InventoryManagement.Data.Models.Vendor", "Vendor")
                         .WithMany("Purchases")
                         .HasForeignKey("IdVendor");
+
+                    b.Navigation("Crates");
 
                     b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("InventoryManagement.Data.Models.PurchaseLine", b =>
                 {
+                    b.HasOne("InventoryManagement.Data.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("IdProduct")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("InventoryManagement.Data.Models.Purchase", "Purchase")
                         .WithMany("PurchaseLines")
                         .HasForeignKey("IdPurchase")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("Purchase");
                 });
@@ -1004,11 +1042,19 @@ namespace InventoryManagement.Migrations
 
             modelBuilder.Entity("InventoryManagement.Data.Models.SalesInvoiceLine", b =>
                 {
+                    b.HasOne("InventoryManagement.Data.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("IdProduct")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("InventoryManagement.Data.Models.SalesInvoices", "SalesInvoice")
                         .WithMany("salesInvoiceLines")
                         .HasForeignKey("IdSalesInvoice")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("SalesInvoice");
                 });

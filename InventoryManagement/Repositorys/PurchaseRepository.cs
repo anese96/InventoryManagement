@@ -27,9 +27,23 @@ namespace InventoryManagement.Repositorys
             throw new NotImplementedException();
         }
 
-        public Task<List<PurchaseDto>> GetAll()
+        public async Task<List<PurchaseDto>> GetAll()
         {
-            throw new NotImplementedException();
+            return await Task.FromResult(_appContext.Purchases.Select(s => new PurchaseDto
+            {
+                Id = s.Id,
+                NumberPurchase = s.NumberPurchase,
+                DatePurchase = s.DatePurchase,
+                IdVendor = s.IdVendor,
+                TotalWithoutTax = s.TotalWithoutTax,
+                Remise = s.Remise,
+                TotalWithoutTaxRemise = s.TotalWithoutTaxRemise,
+                TotalTax = s.TotalTax,
+                TotalPurchase = s.TotalPurchase,
+                PaymentPurchase = s.PaymentPurchase,
+                BalancePurchase = s.BalancePurchase,
+                IdCrates = s.IdCrates
+            }).ToList());
         }
 
         public async Task<PurchaseDto> GetById(int Id)
@@ -75,6 +89,7 @@ namespace InventoryManagement.Repositorys
             };
             await _appContext.Purchases.AddAsync(purchase);
             await _appContext.SaveChangesAsync();
+            entity.Id = purchase.Id;
 
         }
 

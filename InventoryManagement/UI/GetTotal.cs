@@ -27,5 +27,36 @@ namespace InventoryManagement.UI
                 return "0";
             return count.ToString();
         }
+        public async Task<string> GetTotaClientCount() 
+        {
+            int count = await _appDbContext.Customers.CountAsync();
+            if (count == 0)
+                return "0";
+            return count.ToString();
+        }
+        public async Task<string> GetTotalVents()
+        {
+            DateTime debutMois = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime debutMoisSuivant = debutMois.AddMonths(1);
+
+            double total = await _appDbContext.SalesInvoices
+                .Where(c => c.DateInvoice >= debutMois &&
+                            c.DateInvoice < debutMoisSuivant)
+                .CountAsync();
+
+            return total.ToString();
+        }
+        public async Task<string> GetTotalAchats()
+        {
+            DateTime debutMois = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime debutMoisSuivant = debutMois.AddMonths(1);
+
+            double total = await _appDbContext.Purchases
+                .Where(c => c.DatePurchase >= debutMois &&
+                            c.DatePurchase < debutMoisSuivant)
+                .CountAsync();
+
+            return total.ToString();
+        }
     }
 }

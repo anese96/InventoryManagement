@@ -31,9 +31,9 @@ namespace InventoryManagement.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<PurchaseDto>> GetAllAsyncs()
+        public async Task<List<PurchaseDto>> GetAllAsyncs()
         {
-            throw new NotImplementedException();
+            return await _repository.GetAll();
         }
 
         public async Task<PurchaseDto> GetAsyncById(int id)

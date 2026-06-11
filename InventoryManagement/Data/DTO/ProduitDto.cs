@@ -21,6 +21,7 @@ namespace InventoryManagement.Data.DTO
         public int? Colisage { get; set; }
         public int? MarqueId { get; set; }
         public int? NatureId { get; set; }
+        public bool IsFavorite { get; set; }
 
     }
 }

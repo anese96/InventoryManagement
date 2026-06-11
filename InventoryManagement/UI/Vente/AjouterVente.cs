@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Data;
+using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
@@ -38,9 +38,10 @@ namespace InventoryManagement.UI.Vente
             BtnAddRow_Click(null, null);
             Title = "💰 NOUVELLE VENTE";
             Client_Fournisseur="Client:";
+            Visibility = true;
         }
 
-    
+     
 
         public override async void BtnSave_Click(object? sender, EventArgs e)
         {
@@ -94,7 +95,10 @@ namespace InventoryManagement.UI.Vente
             }
 
         }
-
+        public override List<string> customerNames()
+        {
+          return _appContext?.Customers?.Select(c => c.Name).ToList() ?? new List<string>();
+        }
         public async  Task SaveLinesProducts(DataGridView dataGridView, int idSalesInvoice , AppDbContext context)
         {
             foreach (DataGridViewRow row in dgvArticles.Rows)

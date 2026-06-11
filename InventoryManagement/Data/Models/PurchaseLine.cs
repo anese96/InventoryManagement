@@ -8,8 +8,9 @@ namespace InventoryManagement.Data.Models
         [ForeignKey(nameof(Purchase))]
         [Required]
         public int IdPurchase { get; set; }
-        [MaxLength(100)]
+        [ForeignKey(nameof(Product))]
         [Required]
+        public int IdProduct { get; set; }
         public string RefProduct { get; set; }
         [MaxLength(100)]
 
@@ -27,5 +28,7 @@ namespace InventoryManagement.Data.Models
         public decimal TotalWithoutTax { get; set; }
 
         public Purchase Purchase { get; set; }
+
+        public Product Product { get; set; }
     }
 }

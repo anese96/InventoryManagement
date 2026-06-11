@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Data;
+using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
@@ -18,19 +18,19 @@ namespace InventoryManagement.UI.Achat
 {
     public partial class AjouterAchat : SalePurchaseForm
     {
-        private readonly IService<SalesInvoicesDto> _service;
-        private readonly IService<SalesInvoiceLineDto> _lineService;
+        private readonly IService<PurchaseDto> _service;
+        private readonly IService<PurchaseLineDto> _lineService;
         private readonly FunctionUI _functionUI;
         private readonly ProduitRepository _produitRepository;
-        private readonly ClientService _clientService;
-        public AjouterAchat(FunctionUI functionUI, IService<SalesInvoicesDto> service, IService<SalesInvoiceLineDto> lineService, ProduitRepository produitRepository, ClientService clientService, AppDbContext appDbContext) :
+        private readonly VendorService _vendorService;
+        public AjouterAchat(FunctionUI functionUI, IService<PurchaseDto> service, IService<PurchaseLineDto> lineService, ProduitRepository produitRepository, VendorService vendorService, AppDbContext appDbContext) :
           base(functionUI, appDbContext)
         {
             _produitRepository = produitRepository;
             _functionUI = functionUI;
             _service = service;
             _lineService = lineService;
-            _clientService = clientService;
+           _vendorService = vendorService;
             InitializeComponent();
             BtnAddRow_Click(null, null);
             Title = "🛒 NOUVELLE ACHAT";
@@ -39,6 +39,10 @@ namespace InventoryManagement.UI.Achat
         }
 
 
+        public override List<string> customerNames()
+        {
+            return _appContext?.Vendors?.Select(c => c.Name).ToList() ?? new List<string>();
+        }
         public override void DgvArticles_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -111,9 +115,81 @@ namespace InventoryManagement.UI.Achat
             CalculateTotals(null, null);
         }
 
-        public override void BtnSave_Click(object? sender, EventArgs e)
+        public override async void BtnSave_Click(object? sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            if (!CheckdgvArticlesRows())
+                return;
+            var context = _appContext;
+            var clientName = cmbClient.Text.Trim().ToLower();
+            var selectedCustomer = context.Vendors
+                .FirstOrDefault(c => c.Name.ToLower() == clientName);
+
+            if (selectedCustomer == null && (decimal)numResteAPayer.Value > 0)
+            {
+                MessageBox.Show("Veuillez sélectionner un Fournisseur pour les paiements en attente!", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            try
+            {
+                var purchaseDto = new PurchaseDto
+                {
+                    NumberPurchase = txtNumFacture.Text,
+                    DatePurchase = dtpDate.Value,
+                    IdVendor = selectedCustomer?.Id,
+                    TotalWithoutTax = (decimal)numTotalHT.Value,
+                    Remise = (decimal)numRemise.Value,
+                    TotalWithoutTaxRemise = (decimal)numTotalHTRemise.Value,
+                    TotalTax = (decimal)numTotalTVA.Value,
+                    TotalPurchase = (decimal)numTotalTTC.Value,
+                    PaymentPurchase = (decimal)numMontantPaye.Value,
+                    BalancePurchase = (decimal)numResteAPayer.Value,
+                    IdCrates = (cbxCaisse.SelectedItem as Crates)?.Id,
+                };
+                await _service.AddAsync(purchaseDto);
+                await SaveLinesProducts(dgvArticles, purchaseDto.Id, context);
+                if (selectedCustomer != null)
+                {
+                    await _vendorService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);
+                }
+                if (selectedCustomer != null)
+                {
+                    await _vendorService.UpdateTurnoverAsync(selectedCustomer.Id, (decimal)numTotalTTC.Value);
+                }
+                MessageBox.Show("Achat ajouté avec succès");
+                this.DialogResult = DialogResult.OK;
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.InnerException?.Message ?? ex.Message);
+                this.DialogResult = DialogResult.OK;
+            }
+
+        }
+
+        public async Task SaveLinesProducts(DataGridView dataGridView, int idPurchase, AppDbContext context)
+        {
+            foreach (DataGridViewRow row in dgvArticles.Rows)
+            {
+                if (row.IsNewRow) continue;
+                string IdProduct = row.Cells["IdProduct"].Value?.ToString();
+                decimal qteVendue = Convert.ToDecimal(row.Cells["Qte"].Value ?? 0);
+                var product = context.Products.FirstOrDefault(p => p.Id.ToString() == IdProduct);
+                _produitRepository.ModifierQty(product.Id, (int)qteVendue, true);
+                var purchaseLineDto = new PurchaseLineDto
+                {
+                    IdProduct = Convert.ToInt32(row.Cells["IdProduct"].Value),
+                    RefProduct = row.Cells["RefProduit"].Value?.ToString(),
+                    Designation = row.Cells["Designation"].Value?.ToString(),
+                    Quantity = Convert.ToDecimal(row.Cells["Qte"].Value ?? 0),
+                    Price = Convert.ToDecimal(row.Cells["Prix"].Value ?? 0),
+                    Taxe = row.Cells["TVA"].Value?.ToString() ?? "0", // Default tax
+                    TotalWithoutTax = Convert.ToDecimal(row.Cells["TotalHT"].Value ?? 0)
+                };
+                purchaseLineDto.IdPurchase = idPurchase;
+                await _lineService.AddAsync(purchaseLineDto);
+            }
         }
     }
 }

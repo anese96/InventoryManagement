@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace InventoryManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class @new : Migration
+    public partial class Firdt : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -359,6 +359,7 @@ namespace InventoryManagement.Migrations
                     TotalPurchase = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
                     PaymentPurchase = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
                     BalancePurchase = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
+                    IdCrates = table.Column<int>(type: "INTEGER", nullable: true),
                     CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatorId = table.Column<int>(type: "INTEGER", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -370,6 +371,11 @@ namespace InventoryManagement.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Purchases", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Purchases_Crates_IdCrates",
+                        column: x => x.IdCrates,
+                        principalTable: "Crates",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Purchases_Vendors_IdVendor",
                         column: x => x.IdVendor,
@@ -432,33 +438,6 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "salesInvoiceLines",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    IdSalesInvoice = table.Column<int>(type: "INTEGER", nullable: false),
-                    IdProduct = table.Column<int>(type: "INTEGER", nullable: false),
-                    RefProduct = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Designation = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Quantity = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
-                    PurchasePrice = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
-                    Taxe = table.Column<string>(type: "TEXT", nullable: false),
-                    TotalWithoutTax = table.Column<decimal>(type: "decimal(18, 2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_salesInvoiceLines", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_salesInvoiceLines_SalesInvoices_IdSalesInvoice",
-                        column: x => x.IdSalesInvoice,
-                        principalTable: "SalesInvoices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "PriceLists",
                 columns: table => new
                 {
@@ -480,13 +459,47 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "salesInvoiceLines",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    IdSalesInvoice = table.Column<int>(type: "INTEGER", nullable: false),
+                    IdProduct = table.Column<int>(type: "INTEGER", nullable: false),
+                    RefProduct = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Designation = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Quantity = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
+                    PurchasePrice = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
+                    Taxe = table.Column<string>(type: "TEXT", nullable: false),
+                    TotalWithoutTax = table.Column<decimal>(type: "decimal(18, 2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_salesInvoiceLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_salesInvoiceLines_Products_IdProduct",
+                        column: x => x.IdProduct,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_salesInvoiceLines_SalesInvoices_IdSalesInvoice",
+                        column: x => x.IdSalesInvoice,
+                        principalTable: "SalesInvoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "purchaseLines",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     IdPurchase = table.Column<int>(type: "INTEGER", nullable: false),
-                    RefProduct = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    IdProduct = table.Column<int>(type: "INTEGER", nullable: false),
+                    RefProduct = table.Column<string>(type: "TEXT", nullable: false),
                     Designation = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Quantity = table.Column<decimal>(type: "TEXT", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
@@ -496,6 +509,12 @@ namespace InventoryManagement.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_purchaseLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_purchaseLines_Products_IdProduct",
+                        column: x => x.IdProduct,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_purchaseLines_Purchases_IdPurchase",
                         column: x => x.IdPurchase,
@@ -575,9 +594,19 @@ namespace InventoryManagement.Migrations
                 column: "UnitId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_purchaseLines_IdProduct",
+                table: "purchaseLines",
+                column: "IdProduct");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_purchaseLines_IdPurchase",
                 table: "purchaseLines",
                 column: "IdPurchase");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Purchases_IdCrates",
+                table: "Purchases",
+                column: "IdCrates");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Purchases_IdVendor",
@@ -613,6 +642,11 @@ namespace InventoryManagement.Migrations
                 name: "IX_returnSalesLines_IdReturnSales",
                 table: "returnSalesLines",
                 column: "IdReturnSales");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_salesInvoiceLines_IdProduct",
+                table: "salesInvoiceLines",
+                column: "IdProduct");
 
             migrationBuilder.CreateIndex(
                 name: "IX_salesInvoiceLines_IdSalesInvoice",
@@ -658,9 +692,6 @@ namespace InventoryManagement.Migrations
                 name: "salesInvoiceLines");
 
             migrationBuilder.DropTable(
-                name: "Products");
-
-            migrationBuilder.DropTable(
                 name: "Purchases");
 
             migrationBuilder.DropTable(
@@ -670,7 +701,13 @@ namespace InventoryManagement.Migrations
                 name: "returnSales");
 
             migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
                 name: "SalesInvoices");
+
+            migrationBuilder.DropTable(
+                name: "Vendors");
 
             migrationBuilder.DropTable(
                 name: "Categories");
@@ -683,9 +720,6 @@ namespace InventoryManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "Units");
-
-            migrationBuilder.DropTable(
-                name: "Vendors");
 
             migrationBuilder.DropTable(
                 name: "Crates");

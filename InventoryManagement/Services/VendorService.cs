@@ -1,6 +1,7 @@
 ﻿using InventoryManagement.Data.DTO;
 using InventoryManagement.InterfacesRepositorys;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Repositorys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,12 @@ namespace InventoryManagement.Services
     public class VendorService : IService<VendorDto>
     {
         private readonly IRepository<VendorDto> _repository;
+        private readonly VendorRepository _vendorRepository;
 
-        public VendorService(IRepository<VendorDto> repository)
+        public VendorService(IRepository<VendorDto> repository, VendorRepository vendorRepository)
         {
             _repository = repository;
+            _vendorRepository = vendorRepository;
         }
         public async Task AddAsync(VendorDto entity)
         {
@@ -51,6 +54,16 @@ namespace InventoryManagement.Services
                 throw new ArgumentException("Un Champ Vide.");
             }
             await _repository.Update(entity, Id);
+        }
+
+        public async Task UpdateBalanceAsync(int id, decimal balance)
+        {
+            await _vendorRepository.UpdateBalance(id, balance);
+        }
+
+        public async Task UpdateTurnoverAsync(int id, decimal turnover)
+        {
+            await _vendorRepository.UpdateTurnover(id, turnover);
         }
     }
 }

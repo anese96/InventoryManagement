@@ -20,6 +20,21 @@ namespace InventoryManagement.UI
         private Label lblClient;
         private string _title;
         private string _Client_Fournisseur;
+
+        public Button btnSave;
+        private bool _visibility = true;
+        public bool Visibility
+        {
+            get => _visibility;
+            set
+            {
+                _visibility = value;
+                if (btnSave != null)
+                {
+                    btnSave.Visible = _visibility;
+                }
+            }
+        }
         public string Title 
         {
             get => _title;
@@ -57,7 +72,7 @@ namespace InventoryManagement.UI
             InitializeCustomComponents();        
         }
 
-
+        public abstract List<string> customerNames();
         public bool CheckdgvArticlesRows()
         {
             
@@ -79,16 +94,16 @@ namespace InventoryManagement.UI
                 // Vérification du stock
                 var product = _appContext.Products
               .FirstOrDefault(x => x.Id == Convert.ToInt32(row.Cells["IdProduct"].Value));
-                if (product.StockQuantity < Convert.ToDecimal(row.Cells["Qte"].Value ?? 0))
-                {
-                    MessageBox.Show(
-           $"Stock insuffisant pour le produit : {product.Designation}",
-           "Stock",
-           MessageBoxButtons.OK,
-           MessageBoxIcon.Warning);
+           //     if (product.StockQuantity < Convert.ToDecimal(row.Cells["Qte"].Value ?? 0))
+           //     {
+           //         MessageBox.Show(
+           //$"Stock insuffisant pour le produit : {product.Designation}",
+           //"Stock",
+           //MessageBoxButtons.OK,
+           //MessageBoxIcon.Warning);
 
-                    return false;
-                }
+           //         return false;
+           //     }
             }
             if (dgvArticles.Rows.Count == 0 || string.IsNullOrWhiteSpace(txtNumFacture.Text))
             {
@@ -177,15 +192,17 @@ namespace InventoryManagement.UI
                 Location = new Point(110, 35),
                 Size = new Size(250, 25)
             };
-            entetePanel.Controls.Add(cmbClient);
+               entetePanel.Controls.Add(cmbClient);
 
-     
-         
-                var customerNames = _appContext.Customers
-                                      .Select(c => c.Name)
-                                      .ToArray();
+
+        
+
                 var source = new AutoCompleteStringCollection();
-                source.AddRange(customerNames);
+                var names = customerNames();
+                if (names != null)
+                {
+                    source.AddRange(names.ToArray());
+                }
                 cmbClient.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 cmbClient.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 cmbClient.AutoCompleteCustomSource = source;
@@ -426,7 +443,7 @@ namespace InventoryManagement.UI
             };
             mainPanel.Controls.Add(buttonPanel);
 
-            Button btnSave = new Button
+            btnSave = new Button
             {
                 Text = "💾 Enregistrer",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
@@ -440,8 +457,9 @@ namespace InventoryManagement.UI
             btnSave.FlatAppearance.BorderSize = 0;
             btnSave.Click += BtnSave_Click;
             buttonPanel.Controls.Add(btnSave);
+            btnSave.Visible = Visibility;
 
-            Button btnCancel = new Button
+                Button btnCancel = new Button
             {
                 Text = "❌ Annuler",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
@@ -455,6 +473,7 @@ namespace InventoryManagement.UI
             btnCancel.FlatAppearance.BorderSize = 0;
             btnCancel.Click += _functionUI.BtnCancel_Click;
             buttonPanel.Controls.Add(btnCancel);
+            btnCancel.Visible = Visibility;
         }
 
         public virtual void DgvArticles_CellValueChanged(object sender, DataGridViewCellEventArgs e)

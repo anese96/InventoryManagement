@@ -15,6 +15,7 @@ namespace InventoryManagement.Data.DTO
         public string NumberPayment { get; set; }
         public DateTime DatePayment { get; set; }
         public decimal? Payment { get; set; } //  Montant
+        public int IdCrates { get; set; }
         public Vendor Vendor { get; set; }
     }
 }

@@ -24,7 +24,7 @@ namespace InventoryManagement.UI.Produit
 
         public TextBox txtRef, txtDesignation, txtBarCode, txtPurchasePrice, txtSalesPrice, txtStock, txtAlertQty, txtColisage;
         public DataGridView dgvPriceLists;
-        public ComboBox cbCategory, cbTaxe, cbUnit, cbNature, cbBrand;
+        public ComboBox cbCategory, cbTaxe, cbUnit, cbNature, cbBrand , cbIsFavorite;
         public CheckBox cbAutoBarecode;
         
         private readonly FunctionUI _functionUI;
@@ -169,6 +169,8 @@ namespace InventoryManagement.UI.Produit
             _functionUI.AddFormField(rightPanel, "Colisage:", lblW, fldW, 30, spc, out txtColisage);
             _functionUI.AddComboBoxField(rightPanel, "Nature:", lblW, fldW, spc, out cbNature);
             _functionUI.AddComboBoxField(rightPanel, "Marque:", lblW, fldW, spc, out cbBrand);
+            _functionUI.AddComboBoxField(rightPanel, "Favori:", lblW, fldW, spc, out cbIsFavorite);
+            cbIsFavorite.Items.AddRange(new object[] { "Non", "Oui" }); cbIsFavorite.SelectedIndex = 0;
 
 
             // DataGridView for price listes
@@ -250,8 +252,17 @@ namespace InventoryManagement.UI.Produit
 
         public  virtual async void BtnSave_Click(object? sender, EventArgs e)
         {
-            try { 
-            var produitDto = new ProduitDto
+            try {
+                bool Favorite;
+                if (cbIsFavorite.SelectedIndex == 1)
+                {
+                    Favorite = true;
+                }
+                else
+                {
+                    Favorite = false;
+                }
+                var produitDto = new ProduitDto
             {
                 RefProduct = txtRef.Text,
                 Designation = txtDesignation.Text,              
@@ -261,11 +272,13 @@ namespace InventoryManagement.UI.Produit
                 UnitId = (cbUnit.SelectedItem as Unit)?.Id,
                 MarqueId = (cbBrand.SelectedItem as Marque)?.Id,
                 NatureId = (cbNature.SelectedItem as Nature)?.Id,
+                Colisage = (int?)_functionUI.ParseDecimal(txtColisage.Text),
                 PurchasePrice = _functionUI.ParseDecimal(txtPurchasePrice.Text),
                 SalesPrice = _functionUI.ParseDecimal(txtSalesPrice.Text),
                 StockQuantity = _functionUI.ParseDecimal(txtStock.Text),
                 QtyAlert = _functionUI.ParseDecimal(txtAlertQty.Text),
-            };
+                IsFavorite = Favorite
+                };
             await _service.AddAsync(produitDto);
             await SavePriceList(dgvPriceLists, produitDto.Id);
 

@@ -11,6 +11,7 @@ namespace InventoryManagement.Data.DTO
 {
     public class PurchaseDto
     {
+        public int Id { get; set; }
         public string NumberPurchase { get; set; }
 
        
@@ -32,5 +33,6 @@ namespace InventoryManagement.Data.DTO
         public decimal? PaymentPurchase { get; set; }
    
         public decimal? BalancePurchase { get; set; }
+        public int? IdCrates { get; set; }
     }
 }

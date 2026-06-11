@@ -26,7 +26,9 @@ namespace InventoryManagement.UI.Vente
         private readonly FunctionUI _functionUI;
         private readonly AppDbContext _appContext;
         private int _id;
-        public ModifierVente(int id, FunctionUI functionUI, IService<SalesInvoicesDto> service, IService<SalesInvoiceLineDto> lineService, ProduitRepository produitRepository, AppDbContext appDbContext) : base(functionUI, appDbContext  )
+        public ModifierVente(int id, FunctionUI functionUI, IService<SalesInvoicesDto> service,
+            IService<SalesInvoiceLineDto> lineService, ProduitRepository produitRepository,
+            AppDbContext appDbContext) : base(functionUI, appDbContext  )
         {
             Title = "MODIFIER VENTE";
             cmbClient.ReadOnly = true;
@@ -38,15 +40,12 @@ namespace InventoryManagement.UI.Vente
             _produitRepository = produitRepository;
             _appContext = appDbContext;
             InitializeComponent();
-        
+            Visibility = false;
             LoadData();
 
         }
-
         private void LoadData()
         {
-
-
             _service.GetAsyncById(_id).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
@@ -244,6 +243,11 @@ namespace InventoryManagement.UI.Vente
                 salesInvoiceLineDto.IdSalesInvoice = idSalesInvoice;
                 await _lineService.AddAsync(salesInvoiceLineDto);
             }
+        }
+
+        public override List<string> customerNames()
+        {
+            return "".Split(',').ToList();
         }
     }
 }

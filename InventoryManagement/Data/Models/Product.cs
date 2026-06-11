@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Data.Entity;
+using InventoryManagement.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -47,5 +47,8 @@ namespace InventoryManagement.Data.Models
         public Marque Marque { get; set; }
         public Nature Nature { get; set; }
         public List<PriceLists> PriceLists { get; set; }
+
+        /// <summary>Marque ce produit comme favori pour un accès rapide en caisse.</summary>
+        public bool IsFavorite { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace InventoryManagement.Repositorys
     public class SalesInvoiceLineRepository : IRepository<SalesInvoiceLineDto>
     {
         private readonly AppDbContext _appContext;
-        private readonly AddEntityBD _addEntityBD;
+       
 
         public SalesInvoiceLineRepository(AppDbContext appDbContext)
         {
