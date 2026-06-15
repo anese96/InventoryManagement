@@ -104,6 +104,7 @@ namespace InventoryManagement.Repositorys
                 Colisage = produit.Colisage,
                 MarqueId = produit.MarqueId,
                 NatureId = produit.NatureId,
+                IsFavorite = produit.IsFavorite
             };
         }
         public async Task Update(ProduitDto entity, int Id)
@@ -127,6 +128,7 @@ namespace InventoryManagement.Repositorys
             produit.QtyAlert = entity.QtyAlert;
             produit.Taxe = entity.Taxe;
             produit.UnitId = entity.UnitId;
+            produit.IsFavorite = entity.IsFavorite;
             await _appContext.SaveChangesAsync();
         }
 

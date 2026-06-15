@@ -57,6 +57,15 @@ namespace InventoryManagement.UI.Produit
                             txtStock.Text = produit.StockQuantity?.ToString("F2");
                             txtAlertQty.Text = produit.QtyAlert?.ToString("F2");
                             txtColisage.Text = produit.Colisage?.ToString();
+                            if (produit.IsFavorite==true)
+                            {
+                               cbIsFavorite.SelectedIndex = 1;
+                               
+                            }
+                            else
+                            {
+                            cbIsFavorite.SelectedIndex = 0;
+                            }
                     }
                     
                     else
@@ -96,6 +105,15 @@ namespace InventoryManagement.UI.Produit
         }
         public  override async void BtnSave_Click(object? sender, EventArgs e)
         {
+            bool Favorite;
+            if (cbIsFavorite.SelectedIndex == 1)
+            {
+                Favorite = true;
+            }
+            else
+            {
+                Favorite = false;
+            }
             try
             {
                 await _service.UpdateAsync(new ProduitDto
@@ -112,7 +130,8 @@ namespace InventoryManagement.UI.Produit
                     SalesPrice = _functionUI.ParseDecimal(txtSalesPrice.Text),
                     StockQuantity = _functionUI.ParseDecimal(txtStock.Text),
                     QtyAlert = _functionUI.ParseDecimal(txtAlertQty.Text),
-                    Colisage = (int?)_functionUI.ParseDecimal(txtColisage.Text)
+                    Colisage = (int?)_functionUI.ParseDecimal(txtColisage.Text),
+                    IsFavorite = Favorite
                 }, _id);
 
                 SavePriceList(dgvPriceLists, _id);

@@ -172,7 +172,7 @@ namespace InventoryManagement.UI
             btnCounterSales.TextAlign = ContentAlignment.MiddleLeft;
             btnCounterSales.TextImageRelation = TextImageRelation.ImageBeforeText;
             btnCounterSales.UseVisualStyleBackColor = true;
-            btnCounterSales.Click += BtnCounterSales_Click;
+        //    btnCounterSales.Click += BtnCounterSales_Click;
             // 
             // btnSalesReturns
             // 

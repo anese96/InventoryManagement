@@ -18,6 +18,7 @@ using InventoryManagement.UI.Vente;
 using InventoryManagement.UI.VentesComptoir;
 using InventoryManagement.UI.Achat;
 using InventoryManagement.Data;
+using InventoryManagement.UI.Dashboard;
 
 namespace InventoryManagement.UI
 {
@@ -40,7 +41,7 @@ namespace InventoryManagement.UI
 
         private void BtnUsers_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+           // throw new NotImplementedException();
         }
         private void BtnCommonRepositories_Click(object sender, EventArgs e)
         {
@@ -213,16 +214,18 @@ namespace InventoryManagement.UI
         }   
         private void BtnDataSpreadsheets_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();///tt
+           // throw new NotImplementedException();///tt
+           SetActiveButton(btnDataSpreadsheets);
+           LoadFormInPanel(new InventoryManagement.UI.Dashboard.Dashboard());
         }
         private void BtnCashFlow_Click(object sender, EventArgs e)
         {
             //throw new NotImplementedException();
         }
-        private void BtnCounterSales_Click(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        //private void BtnCounterSales_Click(object sender, EventArgs e)
+        //{
+           
+        //}
         private void BtnSalesReturns_Click(object sender, EventArgs e)
         {
             throw new NotImplementedException();

@@ -1,5 +1,9 @@
 using InventoryManagement.Data;
+using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
+using InventoryManagement.InterfacesServices;
+using InventoryManagement.Repositorys;
+using InventoryManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -9,6 +13,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -22,12 +27,24 @@ namespace InventoryManagement.UI.VentesComptoir
         private Label lblTotalDisplay;
         private TextBox txtSearch;
         private DataGridView dgvCart;
-        private NumericUpDown numPayment;
         private Label lblChange;
         private Button btnValidate;
         private Button btnCancel;
         private Panel pnlHeader;
         private Panel pnlFooter;
+        // New Fields
+        private TextBox txtClient;
+        private TextBox txtTicketNumber;
+        private DateTimePicker dtpDate;
+        // Footer numeric fields
+        private NumericUpDown numTotalHT;
+        private NumericUpDown numRemise;
+        private NumericUpDown numTotalHTRemise;
+        private NumericUpDown numTotalTVA;
+        private NumericUpDown numTotalTTC;
+        private NumericUpDown numMontantPaye;
+        private NumericUpDown numResteAPayer;
+        private ComboBox cbxCaisse;
         // Favoris
         private Panel pnlFavoritesScroll;
         private FlowLayoutPanel pnlFavoritesFlow;
@@ -39,6 +56,11 @@ namespace InventoryManagement.UI.VentesComptoir
         private FlowLayoutPanel pnlPendingFlow;
         private Panel pnlPendingScroll;
         private Button btnHold;
+        public readonly AppDbContext _appContext;
+        private readonly IService<SalesInvoicesDto> _service;
+        private readonly ClientService _clientService;
+        private readonly ProduitRepository _produitRepository;
+        private readonly IService<SalesInvoiceLineDto> _lineService;
         public AjouterVentesComptoir()
         {
             InitializeComponent();
@@ -48,7 +70,7 @@ namespace InventoryManagement.UI.VentesComptoir
             this.WindowState = FormWindowState.Maximized;
             this.KeyPreview = true; // For shortcuts
             this.KeyDown += AddCounterSalesForm_KeyDown;
-            this.Load += (s, e) => { LoadFavorites(); LoadSearchAutoComplete(); LoadPendingCarts(); };
+            this.Load += (s, e) => { LoadFavorites(); LoadSearchAutoComplete(); LoadPendingCarts(); LoadClientAutoComplete(); };
         }
         private void SetupCustomUI()
         {
@@ -74,13 +96,15 @@ namespace InventoryManagement.UI.VentesComptoir
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 4,
+                RowCount = 6,
                 Padding = new Padding(10)
             };
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F)); // Header/Total
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 85F));  // Info Panel (Client, Ticket, Date)
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));  // Search
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));  // Grid
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150F)); // Footer/Payment
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 240F)); // Pied section
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F));  // Buttons
             outerLayout.Controls.Add(mainLayout, 0, 0);
 
             // 1. Header Section (Total Display)
@@ -116,6 +140,121 @@ namespace InventoryManagement.UI.VentesComptoir
             pnlHeader.Controls.Add(lblStoreName);
             mainLayout.Controls.Add(pnlHeader, 0, 0);
 
+            // 1b. Info Section (Client, N° Ticket, Date)
+            Panel pnlInfo = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(5),
+                Height = 85
+            };
+
+            TableLayoutPanel infoLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 1,
+                BackColor = Color.Transparent
+            };
+            infoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F)); // Client
+            infoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F)); // Ticket
+            infoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F)); // Date
+            infoLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            pnlInfo.Controls.Add(infoLayout);
+
+            // Client control setup
+            TableLayoutPanel cellClient = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = new Padding(5)
+            };
+            cellClient.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            cellClient.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            Label lblClient = new Label
+            {
+                Text = "CLIENT",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(127, 140, 141),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.BottomLeft
+            };
+            txtClient = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 12),
+            //    Text = "Client Comptoir"
+            };
+            txtClient.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            txtClient.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            txtClient.AutoCompleteCustomSource = new AutoCompleteStringCollection();
+            cellClient.Controls.Add(lblClient, 0, 0);
+            cellClient.Controls.Add(txtClient, 0, 1);
+            infoLayout.Controls.Add(cellClient, 0, 0);
+
+            // Ticket control setup
+            TableLayoutPanel cellTicket = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = new Padding(5)
+            };
+            cellTicket.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            cellTicket.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            Label lblTicket = new Label
+            {
+                Text = "N° TICKET",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(127, 140, 141),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.BottomLeft
+            };
+            txtTicketNumber = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 12),
+                Text = "TCK-" + DateTime.Now.ToString("HHmmss")
+            };
+            cellTicket.Controls.Add(lblTicket, 0, 0);
+            cellTicket.Controls.Add(txtTicketNumber, 0, 1);
+            infoLayout.Controls.Add(cellTicket, 1, 0);
+
+            // Date control setup
+            TableLayoutPanel cellDate = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = new Padding(5)
+            };
+            cellDate.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            cellDate.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            Label lblDate = new Label
+            {
+                Text = "DATE",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(127, 140, 141),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.BottomLeft
+            };
+            dtpDate = new DateTimePicker
+            {
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 11),
+                Format = DateTimePickerFormat.Short,
+                Value = DateTime.Now
+            };
+            cellDate.Controls.Add(lblDate, 0, 0);
+            cellDate.Controls.Add(dtpDate, 0, 1);
+            infoLayout.Controls.Add(cellDate, 2, 0);
+
+            mainLayout.Controls.Add(pnlInfo, 0, 1);
+
             // 2. Search Bar Section
             Panel searchPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(5) };
             txtSearch = new TextBox
@@ -131,7 +270,7 @@ namespace InventoryManagement.UI.VentesComptoir
             txtSearch.AutoCompleteCustomSource = new AutoCompleteStringCollection();
             txtSearch.KeyDown += TxtSearch_KeyDown;
             searchPanel.Controls.Add(txtSearch);
-            mainLayout.Controls.Add(searchPanel, 0, 1);
+            mainLayout.Controls.Add(searchPanel, 0, 2);
 
             // 3. Grid Section (Smart Cart)
             dgvCart = new DataGridView
@@ -205,9 +344,87 @@ namespace InventoryManagement.UI.VentesComptoir
             cartCtxMenu.Items.Add(menuRemoveFav);
             dgvCart.ContextMenuStrip = cartCtxMenu;
 
-            mainLayout.Controls.Add(dgvCart, 0, 2);
+            mainLayout.Controls.Add(dgvCart, 0, 3);
 
-            // 4. Footer Section (Payment + Actions)
+            // 4. Pied Section (totaux + caisse)
+            Panel pnlPiedSection = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(10)
+            };
+
+            Label lblPied = new Label
+            {
+                Text = "Pied",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            pnlPiedSection.Controls.Add(lblPied);
+
+            Panel piedPanel = new Panel
+            {
+                Location = new Point(10, 40),
+                Size = new Size(1120, 180),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            pnlPiedSection.Controls.Add(piedPanel);
+
+            int piedY = 10;
+            int labelWidth = 150;
+            int fieldWidth = 200;
+
+            AddPiedField(piedPanel, "Total HT:", ref piedY, labelWidth, fieldWidth, out numTotalHT);
+            numTotalHT.ReadOnly = true;
+            numTotalHT.BackColor = Color.FromArgb(236, 240, 241);
+
+            AddPiedField(piedPanel, "Remise:", ref piedY, labelWidth, fieldWidth, out numRemise);
+            numRemise.ValueChanged += CalculateTotals;
+
+            AddPiedField(piedPanel, "Total HT Remisé:", ref piedY, labelWidth, fieldWidth, out numTotalHTRemise);
+            numTotalHTRemise.ReadOnly = true;
+            numTotalHTRemise.BackColor = Color.FromArgb(236, 240, 241);
+
+            AddPiedField(piedPanel, "Total TVA:", ref piedY, labelWidth, fieldWidth, out numTotalTVA);
+            numTotalTVA.ReadOnly = true;
+            numTotalTVA.BackColor = Color.FromArgb(236, 240, 241);
+
+            AddPiedField(piedPanel, "Total TTC:", ref piedY, labelWidth, fieldWidth, out numTotalTTC);
+            numTotalTTC.ReadOnly = true;
+            numTotalTTC.BackColor = Color.FromArgb(236, 240, 241);
+            numTotalTTC.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+
+            piedY = 10;
+            int rightColumnX = 600;
+
+            AddPiedFieldRight(piedPanel, "Montant Payé:", ref piedY, rightColumnX, labelWidth, fieldWidth, out numMontantPaye);
+            numMontantPaye.ValueChanged += CalculateTotals;
+
+            AddPiedFieldRight(piedPanel, "Reste à Payer:", ref piedY, rightColumnX, labelWidth, fieldWidth, out numResteAPayer);
+            numResteAPayer.ReadOnly = true;
+            numResteAPayer.BackColor = Color.FromArgb(255, 235, 235);
+            numResteAPayer.ForeColor = Color.FromArgb(192, 57, 43);
+            numResteAPayer.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+
+            AddPiedFieldRight(piedPanel, "Caise:", ref piedY, rightColumnX, labelWidth, fieldWidth, out cbxCaisse);
+
+            var crates = new List<Crates>();
+            try
+            {
+                crates = _appContext.Crates.ToList();
+            }
+            catch { }
+
+            cbxCaisse.DataSource = crates;
+            cbxCaisse.DisplayMember = "Name";
+            cbxCaisse.ValueMember = "Id";
+
+            mainLayout.Controls.Add(pnlPiedSection, 0, 4);
+
+            // 5. Action Buttons
             pnlFooter = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -215,24 +432,20 @@ namespace InventoryManagement.UI.VentesComptoir
                 Padding = new Padding(10)
             };
 
-            TableLayoutPanel footerLayout = new TableLayoutPanel
+            TableLayoutPanel buttonLayout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 5,
+                ColumnCount = 2,
                 RowCount = 1
             };
-            footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F)); // Hold
-            footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F)); // Cancel
-            footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F)); // Payment Input
-            footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F)); // Change Display
-            footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F)); // Validate
+            buttonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            buttonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 
-            // Hold Button
             btnHold = new Button
             {
                 Text = "METTRE EN ATTENTE",
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(241, 196, 15), // Yellow
+                BackColor = Color.FromArgb(241, 196, 15),
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 FlatStyle = FlatStyle.Flat
@@ -240,25 +453,11 @@ namespace InventoryManagement.UI.VentesComptoir
             btnHold.FlatAppearance.BorderSize = 0;
             btnHold.Click += (s, e) => SavePendingCart();
 
-            // Cancel Button
-            btnCancel = new Button
-            {
-                Text = "ANNULER (Esc)",
-                Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(231, 76, 60), // Red
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                FlatStyle = FlatStyle.Flat
-            };
-            btnCancel.FlatAppearance.BorderSize = 0;
-            btnCancel.Click += (s, e) => this.Close();
-
-            // Validate Button
             btnValidate = new Button
             {
                 Text = "VALIDER (F12)",
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(39, 174, 96), // Green
+                BackColor = Color.FromArgb(39, 174, 96),
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 FlatStyle = FlatStyle.Flat
@@ -266,50 +465,10 @@ namespace InventoryManagement.UI.VentesComptoir
             btnValidate.FlatAppearance.BorderSize = 0;
             btnValidate.Click += BtnValidate_Click;
 
-            // Payment Input
-            Label lblPayTitle = new Label { Text = "Montant Payé:", Font = new Font("Segoe UI", 12), AutoSize = true, Dock = DockStyle.Top };
-            numPayment = new NumericUpDown
-            {
-                Dock = DockStyle.Bottom,
-                Font = new Font("Segoe UI", 18),
-                DecimalPlaces = 2,
-                Maximum = 999999999
-            };
-            numPayment.ValueChanged += (s, e) => CalculateChange();
-            numPayment.Enter += (s, e) => numPayment.Select(0, numPayment.Text.Length); // Auto select all
-            // KeyDown for Payment Input to trigger validation on Enter
-            numPayment.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    BtnValidate_Click(this, EventArgs.Empty);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                }
-            };
-
-            Panel payPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(5) };
-            payPanel.Controls.Add(numPayment);
-            payPanel.Controls.Add(lblPayTitle);
-
-            // Change Display
-            lblChange = new Label
-            {
-                Text = "Rendu: 0.00",
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.OrangeRed,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
-            pnlFooter.Controls.Add(footerLayout);
-            footerLayout.Controls.Add(btnHold, 0, 0);
-            footerLayout.Controls.Add(btnCancel, 1, 0);
-            footerLayout.Controls.Add(payPanel, 2, 0);
-            footerLayout.Controls.Add(lblChange, 3, 0);
-            footerLayout.Controls.Add(btnValidate, 4, 0);
-
-            mainLayout.Controls.Add(pnlFooter, 0, 3);
+            buttonLayout.Controls.Add(btnHold, 0, 0);
+            buttonLayout.Controls.Add(btnValidate, 1, 0);
+            pnlFooter.Controls.Add(buttonLayout);
+            mainLayout.Controls.Add(pnlFooter, 0, 5);
 
             // ── Panneau droit (favoris + paniers en attente) ──
             outerLayout.Controls.Add(SetupRightPanel(), 1, 0);
@@ -584,17 +743,140 @@ namespace InventoryManagement.UI.VentesComptoir
 
         private void CalculateChange()
         {
-            decimal paid = numPayment.Value;
-            _change = paid - _totalTTC;
-            lblChange.Text = "Rendu: " + (_change > 0 ? _change.ToString("N2") : "0.00") + " DA";
-            lblChange.ForeColor = _change >= 0 ? Color.Green : Color.Red;
+            // Recompute totals from the cart and update footer numeric fields
+            decimal totalHT = 0m;
+            decimal totalTVA = 0m;
+
+            foreach (DataGridViewRow row in dgvCart.Rows)
+            {
+                if (row.IsNewRow) continue;
+                decimal rowHT = 0m;
+                decimal.TryParse(row.Cells["TotalHT"].Value?.ToString(), out rowHT);
+                totalHT += rowHT;
+
+                string tvaStr = row.Cells["TVA"].Value?.ToString() ?? "0";
+                decimal tvaPercent = 0m;
+                if (tvaStr.Contains("%")) decimal.TryParse(tvaStr.Replace("%", ""), out tvaPercent);
+                else decimal.TryParse(tvaStr, out tvaPercent);
+
+                decimal rowTax = rowHT * (tvaPercent / 100m);
+                totalTVA += rowTax;
+            }
+
+            decimal remise = 0m;
+            try { remise = numRemise?.Value ?? 0m; } catch { remise = 0m; }
+
+            decimal totalHTRemise = totalHT - remise;
+            if (totalHTRemise < 0) totalHTRemise = 0m;
+
+            decimal totalTTC = totalHTRemise + totalTVA;
+
+            // Helper to safely assign NumericUpDown values within range
+            void SetNudValue(NumericUpDown nud, decimal val)
+            {
+                if (nud == null) return;
+                if (val < nud.Minimum) val = nud.Minimum;
+                if (val > nud.Maximum) val = nud.Maximum;
+                try { nud.Value = decimal.Round(val, nud.DecimalPlaces); } catch { nud.Value = nud.Minimum; }
+            }
+
+            numRemise.ValueChanged -= CalculateTotals;
+            numMontantPaye.ValueChanged -= CalculateTotals;
+
+            SetNudValue(numTotalHT, totalHT);
+            SetNudValue(numTotalTVA, totalTVA);
+            SetNudValue(numTotalHTRemise, totalHTRemise);
+            SetNudValue(numTotalTTC, totalTTC);
+            SetNudValue(numMontantPaye, totalTTC);
+
+            numRemise.ValueChanged += CalculateTotals;
+            numMontantPaye.ValueChanged += CalculateTotals;
+
+            _totalTTC = totalTTC;
+            lblTotalDisplay.Text = _totalTTC.ToString("N2") + " DA";
+
+            RecalculateBalance();
+
+         //   decimal paid = numPayment.Value;
+          //  _change = paid - _totalTTC;
+            //lblChange.Text = "Rendu: " + (_change > 0 ? _change.ToString("N2") : "0.00") + " DA";
+            //lblChange.ForeColor = _change >= 0 ? Color.Green : Color.Red;
         }
 
-        private void BtnValidate_Click(object sender, EventArgs e)
+        private async void BtnValidate_Click(object sender, EventArgs e)
         {
+            if (!CheckdgvArticlesRows())
+                return;
+            var context = _appContext;
+            var clientName = txtClient.Text.Trim().ToLower();
+            var selectedCustomer = context.Customers
+                .FirstOrDefault(c => c.Name.ToLower() == clientName);
 
+            if (selectedCustomer == null && (decimal)numResteAPayer.Value > 0)
+            {
+                MessageBox.Show("Veuillez sélectionner un client pour les paiements en attente!", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            try
+            {
+                var salesInvoicesDto = new SalesInvoicesDto
+                {
+                    NumberInvoice = txtTicketNumber.Text,
+                    DateInvoice = dtpDate.Value,
+                    IdCustomer = selectedCustomer?.Id,
+                    TotalWithoutTax = (decimal)numTotalHT.Value,
+                    Remise = (decimal)numRemise.Value,
+                    TotalWithoutTaxRemise = (decimal)numTotalHTRemise.Value,
+                    TotalTax = (decimal)numTotalTVA.Value,
+                    TotalInvoice = (decimal)numTotalTTC.Value,
+                    PaymentInvoice = (decimal)numMontantPaye.Value,
+                    BalanceInvoice = (decimal)numResteAPayer.Value,
+                    IdCrates = (cbxCaisse.SelectedItem as Crates)?.Id,
+                };
+                await _service.AddAsync(salesInvoicesDto);
+                await SaveLinesProducts(dgvCart, salesInvoicesDto.Id, context);
+                if (selectedCustomer != null)
+                {
+                    await _clientService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);
+                }
+                if (selectedCustomer != null)
+                {
+                    await _clientService.UpdateTurnoverAsync(selectedCustomer.Id, (decimal)numTotalTTC.Value);
+                }
+                MessageBox.Show("Vente ajoutée avec succès");
+                this.DialogResult = DialogResult.OK;
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.InnerException?.Message ?? ex.Message);
+                this.DialogResult = DialogResult.OK;
+            }
         }
-
+        public async Task SaveLinesProducts(DataGridView dataGridView, int idSalesInvoice, AppDbContext context)
+        {
+            foreach (DataGridViewRow row in dgvCart.Rows)
+            {
+                if (row.IsNewRow) continue;
+                string IdProduct = row.Cells["IdProduct"].Value?.ToString();
+                decimal qteVendue = Convert.ToDecimal(row.Cells["Qte"].Value ?? 0);
+                var product = context.Products.FirstOrDefault(p => p.Id.ToString() == IdProduct);
+                _produitRepository.ModifierQty(product.Id, (int)qteVendue, false);
+                var salesInvoiceLineDto = new SalesInvoiceLineDto
+                {
+                    IdProduct = Convert.ToInt32(row.Cells["IdProduct"].Value),
+                    RefProduct = row.Cells["Ref"].Value?.ToString(),
+                    Designation = row.Cells["Designation"].Value?.ToString(),
+                    Quantity = Convert.ToDecimal(row.Cells["Qte"].Value ?? 0),
+                    Price = Convert.ToDecimal(row.Cells["Prix"].Value ?? 0),
+                    Taxe = row.Cells["TVA"].Value?.ToString() ?? "0", // Default tax
+                    TotalWithoutTax = Convert.ToDecimal(row.Cells["TotalHT"].Value ?? 0)
+                };
+                salesInvoiceLineDto.IdSalesInvoice = idSalesInvoice;
+                await _lineService.AddAsync(salesInvoiceLineDto);
+            }
+        }
         private void AddCounterSalesForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F1)
@@ -608,6 +890,26 @@ namespace InventoryManagement.UI.VentesComptoir
             else if (e.KeyCode == Keys.Escape)
             {
                 this.Close();
+            }
+        }
+
+        private void CalculateTotals(object? sender, EventArgs? e)
+        {
+            CalculateChange();
+        }
+
+        private void RecalculateBalance()
+        {
+            decimal paid = numMontantPaye?.Value ?? 0m;
+            decimal balance = _totalTTC - paid;
+            if (balance < 0) balance = 0m;
+
+            if (numResteAPayer != null)
+            {
+                if (balance < numResteAPayer.Minimum) balance = numResteAPayer.Minimum;
+                if (balance > numResteAPayer.Maximum) balance = numResteAPayer.Maximum;
+                try { numResteAPayer.Value = decimal.Round(balance, numResteAPayer.DecimalPlaces); }
+                catch { numResteAPayer.Value = numResteAPayer.Minimum; }
             }
         }
 
@@ -996,6 +1298,27 @@ namespace InventoryManagement.UI.VentesComptoir
             }
         }
 
+        private void LoadClientAutoComplete()
+        {
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    var names = db.Customers.AsNoTracking()
+                        .Select(c => c.Name)
+                        .ToList();
+
+                    var ac = new AutoCompleteStringCollection();
+                    ac.AddRange(names.ToArray());
+                    txtClient.AutoCompleteCustomSource = ac;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadClientAutoComplete error: " + ex.Message);
+            }
+        }
+
         private void SavePendingCart()
         {
             if (dgvCart.Rows.Count == 0)
@@ -1065,9 +1388,90 @@ namespace InventoryManagement.UI.VentesComptoir
             dgvCart.Rows.Clear();
             _totalTTC = 0;
             lblTotalDisplay.Text = "0.00 DA";
-            numPayment.Value = 0;
-            lblChange.Text = "Rendu: 0.00 DA";
-            lblChange.ForeColor = Color.OrangeRed;
+            if (numRemise != null) numRemise.Value = 0;
+            if (numTotalHT != null) numTotalHT.Value = 0;
+            if (numTotalHTRemise != null) numTotalHTRemise.Value = 0;
+            if (numTotalTVA != null) numTotalTVA.Value = 0;
+            if (numTotalTTC != null) numTotalTTC.Value = 0;
+            if (numMontantPaye != null) numMontantPaye.Value = 0;
+            if (numResteAPayer != null) numResteAPayer.Value = 0;
+        }
+
+        private void AddPiedField(Panel parent, string labelText, ref int yPos, int labelW, int fieldW, out NumericUpDown numericUpDown)
+        {
+            Label label = new Label
+            {
+                Text = labelText,
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                Size = new Size(labelW, 25),
+                Location = new Point(20, yPos),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            parent.Controls.Add(label);
+
+            numericUpDown = new NumericUpDown
+            {
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(fieldW, 25),
+                Location = new Point(20 + labelW, yPos),
+                Maximum = 99999999999999,
+                DecimalPlaces = 2,
+                ThousandsSeparator = true
+            };
+            parent.Controls.Add(numericUpDown);
+
+            yPos += 30;
+        }
+
+        private void AddPiedFieldRight(Panel parent, string labelText, ref int yPos, int xPos, int labelW, int fieldW, out ComboBox comboBox)
+        {
+            Label label = new Label
+            {
+                Text = labelText,
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                Size = new Size(labelW, 25),
+                Location = new Point(xPos, yPos),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            parent.Controls.Add(label);
+            comboBox = new ComboBox
+            {
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(fieldW, 25),
+                Location = new Point(xPos + labelW, yPos),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            parent.Controls.Add(comboBox);
+            yPos += 30;
+        }
+
+        private void AddPiedFieldRight(Panel parent, string labelText, ref int yPos, int xPos, int labelW, int fieldW, out NumericUpDown numericUpDown)
+        {
+            Label label = new Label
+            {
+                Text = labelText,
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                Size = new Size(labelW, 25),
+                Location = new Point(xPos, yPos),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            parent.Controls.Add(label);
+
+            numericUpDown = new NumericUpDown
+            {
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(fieldW, 25),
+                Location = new Point(xPos + labelW, yPos),
+                Maximum = 99999999999999,
+                DecimalPlaces = 2,
+                ThousandsSeparator = true
+            };
+            parent.Controls.Add(numericUpDown);
+
+            yPos += 30;
         }
 
         private void LoadPendingCarts()
@@ -1350,6 +1754,42 @@ namespace InventoryManagement.UI.VentesComptoir
         {
             public string Display { get; set; }
             public decimal? Value { get; set; }
+        }
+        public bool CheckdgvArticlesRows()
+        {
+
+            foreach (DataGridViewRow row in dgvCart.Rows)
+            {
+                var RefProduct = row.Cells["RefProduit"].Value?.ToString();
+                var Designation = row.Cells["Designation"].Value?.ToString();
+
+
+                if (string.IsNullOrWhiteSpace(RefProduct) && string.IsNullOrWhiteSpace(Designation))
+                {
+                    MessageBox.Show(
+                        "Veuillez remplir la référence ou la désignation de tous les articles!",
+                        "Validation",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return false;
+                }
+                // Vérification du stock
+                var product = _appContext.Products
+              .FirstOrDefault(x => x.Id == Convert.ToInt32(row.Cells["IdProduct"].Value));
+
+            }
+            if (dgvCart.Rows.Count == 0 || string.IsNullOrWhiteSpace(txtTicketNumber.Text))
+            {
+                MessageBox.Show(
+                    "Veuillez ajouter au moins un article!",
+                    "Validation",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return false;
+            }
+
+            return true;
         }
     }
 }

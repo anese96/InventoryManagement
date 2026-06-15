@@ -94,16 +94,7 @@ namespace InventoryManagement.UI
                 // Vérification du stock
                 var product = _appContext.Products
               .FirstOrDefault(x => x.Id == Convert.ToInt32(row.Cells["IdProduct"].Value));
-           //     if (product.StockQuantity < Convert.ToDecimal(row.Cells["Qte"].Value ?? 0))
-           //     {
-           //         MessageBox.Show(
-           //$"Stock insuffisant pour le produit : {product.Designation}",
-           //"Stock",
-           //MessageBoxButtons.OK,
-           //MessageBoxIcon.Warning);
-
-           //         return false;
-           //     }
+           
             }
             if (dgvArticles.Rows.Count == 0 || string.IsNullOrWhiteSpace(txtNumFacture.Text))
             {
