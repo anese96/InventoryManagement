@@ -32,11 +32,11 @@ namespace InventoryManagement.UI.Produit
 
         public AjouterProduit(FunctionUI functionUI , IService<ProduitDto> service , AppDbContext appContext)
         {
-            InitializeComponent();
             _functionUI = functionUI;
-            InitializeCustomComponents();
             _service = service;
             _appContext = appContext;
+            InitializeComponent();
+            InitializeCustomComponents();
             LoadAllData();
         }
         private void LoadAllData()

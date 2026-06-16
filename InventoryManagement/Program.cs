@@ -86,6 +86,7 @@ namespace InventoryManagement
             services.AddTransient<AjouterPaymentFournisseur>();
             services.AddTransient<AjouterVentesComptoir>();
             services.AddTransient<Qte__Prix>();
+            services.AddTransient<AjouterListeProduit>();
            
 
             /// Modifier ----------------------------------------------------

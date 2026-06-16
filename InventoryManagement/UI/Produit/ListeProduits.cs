@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Button = System.Windows.Forms.Button;
 
 namespace InventoryManagement.UI.Produit
 {
@@ -63,7 +64,7 @@ namespace InventoryManagement.UI.Produit
 
             System.Windows.Forms.Button btnAddProduct = new System.Windows.Forms.Button
             {
-                Text = "➕ Ajouter un Produit",
+                Text = "➕ Ajouter un produit",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 BackColor = Color.FromArgb(52, 152, 219),
                 ForeColor = Color.White,
@@ -79,6 +80,25 @@ namespace InventoryManagement.UI.Produit
                 LoadData();
             };
             actionPanel.Controls.Add(btnAddProduct);
+
+            Button btnAddListProduct = new Button
+            {
+                Text = "📋 Ajouter list Produits",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                BackColor = Color.FromArgb(52, 152, 219),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(200, 45),
+                Location = new Point(220, 8),
+                Cursor = Cursors.Hand
+            };
+            btnAddListProduct.FlatAppearance.BorderSize = 0;
+            btnAddListProduct.Click += (s, e) =>
+            {
+                _formFactory.Open<AjouterListeProduit>();
+                LoadData();
+            };
+            actionPanel.Controls.Add(btnAddListProduct);
 
             this.Controls.Add(actionPanel);
 

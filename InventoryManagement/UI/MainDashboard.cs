@@ -24,13 +24,13 @@ namespace InventoryManagement.UI
 {
     public partial class MainDashboard : Form
     {
-       
+
         private Button currentActiveButton;
         private readonly IFormManager _formFactory;
         private readonly AppDbContext _appContext;
         private Panel currentFormPanel;
         private readonly GetTotal _getTotal;
-        public MainDashboard(IFormManager formFactory, AppDbContext appDbContext, GetTotal getTotal )
+        public MainDashboard(IFormManager formFactory, AppDbContext appDbContext, GetTotal getTotal)
         {
             InitializeComponent();
             _formFactory = formFactory;
@@ -41,7 +41,7 @@ namespace InventoryManagement.UI
 
         private void BtnUsers_Click(object sender, EventArgs e)
         {
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
         private void BtnCommonRepositories_Click(object sender, EventArgs e)
         {
@@ -82,7 +82,7 @@ namespace InventoryManagement.UI
             int startX = 30;
             int startY = 100;
 
-            var types = new[] 
+            var types = new[]
             {
                 new { Type = InventoryManagement.Repositorys.ReferentielType.Categorie, Name = "Catégories", Icon = "📁", Color = Color.FromArgb(52, 152, 219) },
                 new { Type = InventoryManagement.Repositorys.ReferentielType.Unite, Name = "Unités", Icon = "⚖️", Color = Color.FromArgb(46, 204, 113) },
@@ -119,34 +119,46 @@ namespace InventoryManagement.UI
                 {
                     var db = scope.ServiceProvider.GetRequiredService<InventoryManagement.Data.AppDbContext>();
                     var audit = scope.ServiceProvider.GetRequiredService<InventoryManagement.Data.Entity.AddEntityBD>();
-                    
+
                     var repo = new InventoryManagement.Repositorys.ReferentielRepository(db, audit, type);
                     var data = await repo.GetAll();
 
                     var listForm = new GenericListForm<InventoryManagement.Data.DTO.ReferentielDto>(data, null, "Gestion des " + title);
-                    
-                    listForm.OnAdd += async (dto) => {
-                        try {
-                             await repo.Insert(dto);
+
+                    listForm.OnAdd += async (dto) =>
+                    {
+                        try
+                        {
+                            await repo.Insert(dto);
                             // Optional: Reload list to get IDs if needed
-                        } catch(Exception ex) {
+                        }
+                        catch (Exception ex)
+                        {
                             MessageBox.Show("Erreur lors de l'ajout : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     };
 
-                    listForm.OnEdit += async (dto) => {
-                        try {
+                    listForm.OnEdit += async (dto) =>
+                    {
+                        try
+                        {
                             await repo.Update(dto, dto.Id);
-                        } catch(Exception ex) {
+                        }
+                        catch (Exception ex)
+                        {
                             MessageBox.Show("Erreur lors de la modification : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     };
 
-                    listForm.OnDelete += async (dto) => {
-                        try {
+                    listForm.OnDelete += async (dto) =>
+                    {
+                        try
+                        {
                             await repo.Delete(dto.Id);
                             return true;
-                        } catch(Exception ex) {
+                        }
+                        catch (Exception ex)
+                        {
                             MessageBox.Show("Erreur lors de la suppression : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return false;
                         }
@@ -155,7 +167,7 @@ namespace InventoryManagement.UI
                     listForm.ShowDialog();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show("Erreur d'ouverture : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -211,12 +223,12 @@ namespace InventoryManagement.UI
         private void BtnCategories_Click(object sender, EventArgs e)
         {
             throw new NotImplementedException();
-        }   
+        }
         private void BtnDataSpreadsheets_Click(object sender, EventArgs e)
         {
-           // throw new NotImplementedException();///tt
-           SetActiveButton(btnDataSpreadsheets);
-           LoadFormInPanel(new InventoryManagement.UI.Dashboard.Dashboard());
+            // throw new NotImplementedException();///tt
+            SetActiveButton(btnDataSpreadsheets);
+            LoadFormInPanel(new InventoryManagement.UI.Dashboard.Dashboard());
         }
         private void BtnCashFlow_Click(object sender, EventArgs e)
         {
@@ -224,7 +236,7 @@ namespace InventoryManagement.UI
         }
         //private void BtnCounterSales_Click(object sender, EventArgs e)
         //{
-           
+
         //}
         private void BtnSalesReturns_Click(object sender, EventArgs e)
         {
@@ -241,7 +253,7 @@ namespace InventoryManagement.UI
         }
         private void BtnPurchases_Click(object sender, EventArgs e)
         {
-            SetActiveButton(btnPurchases);          
+            SetActiveButton(btnPurchases);
             LoadFormInPanel(new ListeAchats(_formFactory, _appContext));
 
         }
@@ -249,13 +261,13 @@ namespace InventoryManagement.UI
         {
             SetActiveButton(btnSales);
             LoadFormInPanel(new ListeVentes(_formFactory, _appContext));
-           
+
         }
         private void BtnClients_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnClients);
             LoadFormInPanel(new ListeClient(_formFactory, _appContext));
-            
+
         }
         private void BtnDashboard_Click(object sender, EventArgs e)
         {
@@ -290,7 +302,7 @@ namespace InventoryManagement.UI
             currentFormPanel.Controls.Add(welcomeLabel);
 
             // Create dashboard cards
-           CreateDashboardCards(currentFormPanel);
+            CreateDashboardCards(currentFormPanel);
 
             mainContentPanel.Controls.Add(currentFormPanel);
         }
@@ -303,7 +315,7 @@ namespace InventoryManagement.UI
             int startY = 100;
 
             // Products Card
-            string productCount = await  _getTotal.GetTotalProductCount();
+            string productCount = await _getTotal.GetTotalProductCount();
             Panel productsCard = CreateDashboardCard(
                 "Produits",
                 productCount,
@@ -503,7 +515,10 @@ namespace InventoryManagement.UI
 
             return card;
         }
-        
 
+        private void lblAppTitle_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

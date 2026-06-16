@@ -61,9 +61,18 @@ namespace InventoryManagement.UI.VentesComptoir
         private readonly ClientService _clientService;
         private readonly ProduitRepository _produitRepository;
         private readonly IService<SalesInvoiceLineDto> _lineService;
-        public AjouterVentesComptoir()
+
+
+        public AjouterVentesComptoir( AppDbContext appdbContext , IService<SalesInvoicesDto> service
+            
+           ,ClientService clientService,ProduitRepository produitRepository,IService<SalesInvoiceLineDto> service1 )
         {
             InitializeComponent();
+            _appContext = appdbContext;
+            _service = service;
+            _clientService = clientService;
+            _produitRepository  = produitRepository;
+            _lineService = service1;
             SetupCustomUI();
 
             // Set full screen/maximized for POS feel
@@ -71,6 +80,7 @@ namespace InventoryManagement.UI.VentesComptoir
             this.KeyPreview = true; // For shortcuts
             this.KeyDown += AddCounterSalesForm_KeyDown;
             this.Load += (s, e) => { LoadFavorites(); LoadSearchAutoComplete(); LoadPendingCarts(); LoadClientAutoComplete(); };
+       
         }
         private void SetupCustomUI()
         {
@@ -411,13 +421,7 @@ namespace InventoryManagement.UI.VentesComptoir
 
             AddPiedFieldRight(piedPanel, "Caise:", ref piedY, rightColumnX, labelWidth, fieldWidth, out cbxCaisse);
 
-            var crates = new List<Crates>();
-            try
-            {
-                crates = _appContext.Crates.ToList();
-            }
-            catch { }
-
+            var crates = _appContext.Crates.ToList();
             cbxCaisse.DataSource = crates;
             cbxCaisse.DisplayMember = "Name";
             cbxCaisse.ValueMember = "Id";

@@ -44,10 +44,12 @@ namespace InventoryManagement.UI
             btnProducts = new Button();
             btnDashboard = new Button();
             logoPanel = new Panel();
+            pictureBox1 = new PictureBox();
             lblAppTitle = new Label();
             mainContentPanel = new Panel();
             sidebarPanel.SuspendLayout();
             logoPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // sidebarPanel
@@ -172,7 +174,6 @@ namespace InventoryManagement.UI
             btnCounterSales.TextAlign = ContentAlignment.MiddleLeft;
             btnCounterSales.TextImageRelation = TextImageRelation.ImageBeforeText;
             btnCounterSales.UseVisualStyleBackColor = true;
-        //    btnCounterSales.Click += BtnCounterSales_Click;
             // 
             // btnSalesReturns
             // 
@@ -337,6 +338,7 @@ namespace InventoryManagement.UI
             // logoPanel
             // 
             logoPanel.BackColor = Color.FromArgb(44, 62, 80);
+            logoPanel.Controls.Add(pictureBox1);
             logoPanel.Controls.Add(lblAppTitle);
             logoPanel.Dock = DockStyle.Top;
             logoPanel.Location = new Point(0, 0);
@@ -344,8 +346,22 @@ namespace InventoryManagement.UI
             logoPanel.Size = new Size(229, 120);
             logoPanel.TabIndex = 0;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.BackColor = Color.White;
+            pictureBox1.BorderStyle = BorderStyle.Fixed3D;
+            pictureBox1.ErrorImage = Properties.Resources.logo;
+            pictureBox1.Image = Properties.Resources.logo1;
+            pictureBox1.Location = new Point(0, 0);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(229, 120);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            // 
             // lblAppTitle
             // 
+            lblAppTitle.BackColor = Color.White;
             lblAppTitle.Dock = DockStyle.Fill;
             lblAppTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblAppTitle.ForeColor = Color.White;
@@ -353,8 +369,8 @@ namespace InventoryManagement.UI
             lblAppTitle.Name = "lblAppTitle";
             lblAppTitle.Size = new Size(229, 120);
             lblAppTitle.TabIndex = 0;
-            lblAppTitle.Text = "Gestion de\r\nStock";
             lblAppTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblAppTitle.Click += lblAppTitle_Click;
             // 
             // mainContentPanel
             // 
@@ -380,6 +396,7 @@ namespace InventoryManagement.UI
             WindowState = FormWindowState.Maximized;
             sidebarPanel.ResumeLayout(false);
             logoPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
@@ -404,5 +421,7 @@ namespace InventoryManagement.UI
         private System.Windows.Forms.Panel mainContentPanel;
 
         #endregion
+
+        private PictureBox pictureBox1;
     }
 }
