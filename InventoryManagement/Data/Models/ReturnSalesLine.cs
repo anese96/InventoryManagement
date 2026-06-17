@@ -13,6 +13,10 @@ namespace InventoryManagement.Data.Models
         [ForeignKey(nameof(ReturnSales))]
         [Required]
         public int IdReturnSales { get; set; }
+
+        [ForeignKey(nameof(Product))]
+        [Required]
+        public int IdProduct { get; set; }
         [MaxLength(100)]
         [Required]
         public string RefProduct { get; set; }
@@ -32,5 +36,6 @@ namespace InventoryManagement.Data.Models
         public decimal TotalWithoutTax { get; set; }
 
         public ReturnSales ReturnSales { get; set; }
+        public Product Product { get; set; }
     }
 }

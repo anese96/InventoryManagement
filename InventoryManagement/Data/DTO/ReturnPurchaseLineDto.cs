@@ -8,7 +8,8 @@ namespace InventoryManagement.Data.DTO
 {
     public class ReturnPurchaseLineDto
     {
-        public int IdReturnSales { get; set; }
+        public int IdReturnPurchase { get; set; }
+        public int IdProduct { get; set; }
         public string RefProduct { get; set; }
         public string Designation { get; set; }
         public decimal Quantity { get; set; }

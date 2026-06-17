@@ -50,8 +50,9 @@ namespace InventoryManagement.Data
         public DbSet<ReturnPurchaseLine> returnPurchaseLines { get; set; }
         public DbSet<ReturnSales>  returnSales { get; set; }
         public DbSet<ReturnSalesLine>  returnSalesLines { get; set; }
+        public DbSet<User> Users { get; set; }
 
-       
+
     }
 
 }

@@ -1,6 +1,6 @@
-namespace InventoryManagement.UI.Dashboard
+﻿namespace InventoryManagement.UI.RetourAchat
 {
-    partial class Dashboard
+    partial class AjouterRetourAchat
     {
         /// <summary>
         /// Required designer variable.
@@ -30,8 +30,8 @@ namespace InventoryManagement.UI.Dashboard
         {
             this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1200, 850);
-            this.Text = "Dashboard Admin";
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Text = "AjouterRetourAchat";
         }
 
         #endregion
