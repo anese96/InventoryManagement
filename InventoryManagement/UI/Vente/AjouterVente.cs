@@ -78,9 +78,6 @@ namespace InventoryManagement.UI.Vente
                 if (selectedCustomer != null)
                 {
                     await _clientService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);
-                }
-                if (selectedCustomer != null)
-                {
                     await _clientService.UpdateTurnoverAsync(selectedCustomer.Id, (decimal)numTotalTTC.Value);
                 }
                 MessageBox.Show("Vente ajoutée avec succès");
@@ -90,8 +87,7 @@ namespace InventoryManagement.UI.Vente
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.InnerException?.Message ?? ex.Message);
-                this.DialogResult = DialogResult.OK;
+                MessageBox.Show(ex.InnerException?.Message ?? ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
@@ -99,7 +95,7 @@ namespace InventoryManagement.UI.Vente
         {
           return _appContext?.Customers?.Select(c => c.Name).ToList() ?? new List<string>();
         }
-        public async  Task SaveLinesProducts(DataGridView dataGridView, int idSalesInvoice , AppDbContext context)
+        public async Task SaveLinesProducts(DataGridView dataGridView, int idSalesInvoice, AppDbContext context)
         {
             foreach (DataGridViewRow row in dgvArticles.Rows)
             {
@@ -107,6 +103,8 @@ namespace InventoryManagement.UI.Vente
                 string IdProduct = row.Cells["IdProduct"].Value?.ToString();
                 decimal qteVendue = Convert.ToDecimal(row.Cells["Qte"].Value ?? 0);
                 var product = context.Products.FirstOrDefault(p => p.Id.ToString() == IdProduct);
+                if (product == null)
+                    continue;
                 _produitRepository.ModifierQty(product.Id, (int)qteVendue, false);
                 var salesInvoiceLineDto = new SalesInvoiceLineDto
                 {
@@ -117,9 +115,9 @@ namespace InventoryManagement.UI.Vente
                     Price = Convert.ToDecimal(row.Cells["Prix"].Value ?? 0),
                     Taxe = row.Cells["TVA"].Value?.ToString() ?? "0", // Default tax
                     TotalWithoutTax = Convert.ToDecimal(row.Cells["TotalHT"].Value ?? 0)
-                };            
+                };
                 salesInvoiceLineDto.IdSalesInvoice = idSalesInvoice;
-                await _lineService.AddAsync(salesInvoiceLineDto);              
+                await _lineService.AddAsync(salesInvoiceLineDto);
             }
         }
 

@@ -860,12 +860,14 @@ namespace InventoryManagement.UI.VentesComptoir
         }
         public async Task SaveLinesProducts(DataGridView dataGridView, int idSalesInvoice, AppDbContext context)
         {
-            foreach (DataGridViewRow row in dgvCart.Rows)
+            foreach (DataGridViewRow row in dataGridView.Rows)
             {
                 if (row.IsNewRow) continue;
                 string IdProduct = row.Cells["IdProduct"].Value?.ToString();
                 decimal qteVendue = Convert.ToDecimal(row.Cells["Qte"].Value ?? 0);
                 var product = context.Products.FirstOrDefault(p => p.Id.ToString() == IdProduct);
+                if (product == null)
+                    continue;
                 _produitRepository.ModifierQty(product.Id, (int)qteVendue, false);
                 var salesInvoiceLineDto = new SalesInvoiceLineDto
                 {
@@ -1764,7 +1766,7 @@ namespace InventoryManagement.UI.VentesComptoir
 
             foreach (DataGridViewRow row in dgvCart.Rows)
             {
-                var RefProduct = row.Cells["RefProduit"].Value?.ToString();
+                var RefProduct = row.Cells["Ref"].Value?.ToString();
                 var Designation = row.Cells["Designation"].Value?.ToString();
 
 

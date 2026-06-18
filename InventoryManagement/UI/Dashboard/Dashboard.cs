@@ -9,6 +9,10 @@ namespace InventoryManagement.UI.Dashboard
 {
     public partial class Dashboard : Form
     {
+        private readonly kpiAujd kpiAujd;
+        private readonly KpiPartners kpiPartners;
+        private readonly KpiFinance kpiFinance;
+        private readonly kpiStock kpiStock;
         // ════════════════════════════════════════════════════════
         //  PALETTE – Light Professional
         // ════════════════════════════════════════════════════════
@@ -63,8 +67,8 @@ namespace InventoryManagement.UI.Dashboard
         readonly KpiDef[] _kpiPartners = {
             new KpiDef { Icon="👥", Title="Clients Actifs",        Value="1 234",        Trend="comptes ouverts",  Accent=A_Cyan,   TrendUp=true  },
             new KpiDef { Icon="🏢", Title="Fournisseurs Actifs",   Value="89",           Trend="référencés",       Accent=A_Purple, TrendUp=true  },
-            new KpiDef { Icon="💳", Title="Créances Clients",      Value="142 600 DA",   Trend="à recouvrir",      Accent=A_Pink,   TrendUp=false },
-            new KpiDef { Icon="💸", Title="Dettes Fournisseurs",   Value="98 750 DA",    Trend="à régler",         Accent=A_Red,    TrendUp=false },
+            new KpiDef { Icon="💳", Title="Soldes Clients",      Value="142 600 DA",   Trend="à recouvrir",      Accent=A_Pink,   TrendUp=false },
+            new KpiDef { Icon="💸", Title="Soldes Fournisseurs",   Value="98 750 DA",    Trend="à régler",         Accent=A_Red,    TrendUp=false },
         };
 
         readonly KpiDef[] _kpiAlertes = {
