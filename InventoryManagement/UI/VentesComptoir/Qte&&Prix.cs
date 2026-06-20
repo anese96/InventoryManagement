@@ -18,16 +18,18 @@ namespace InventoryManagement.UI.VentesComptoir
     {
       
         private readonly FunctionUI _functionUI;
+        private readonly AppDbContext _appDbContext;
         public int IdProduit;
         public TextBox Qte , Qte_pack, Prix;
         public ComboBox Tarification;
         private decimal? _colisage;
         private bool _isUpdatingQty = false;
 
-        public Qte__Prix( FunctionUI functionUI)
+        public Qte__Prix( FunctionUI functionUI, AppDbContext appDbContext )
         {
             
             _functionUI = functionUI;
+            _appDbContext = appDbContext;
             InitializeComponent();
             InitializeCustomComponents();
         }
@@ -230,6 +232,14 @@ namespace InventoryManagement.UI.VentesComptoir
             {
                 MessageBox.Show("Veuillez saisir un prix valide.", "Erreur de validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Prix.Focus();
+                return;
+            }
+            var product = _appDbContext.Products
+             .FirstOrDefault(x => x.Id == IdProduit);
+            if (product.StockQuantity < Convert.ToDecimal(Qte.Text))
+            {
+                MessageBox.Show("Quantité insuffisante en stock.", "Erreur de validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Qte.Focus();
                 return;
             }
 

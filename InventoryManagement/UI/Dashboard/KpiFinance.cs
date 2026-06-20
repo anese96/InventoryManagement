@@ -1,4 +1,5 @@
 ﻿using InventoryManagement.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,27 @@ namespace InventoryManagement.UI.Dashboard
             _appDbContext = appDbContext;
         }
 
-        public decimal TotalChiffreAffaires(){  return 1;}
-        public decimal BeneficeDuMois(){  return 1;}
-        public decimal VentesDuMois(){  return 1;}
-        public decimal AchatsDuMois(){  return 1;}
+        public async Task<decimal> TotalChiffreAffaires()
+        {
+            return 1;
+        }
+        public async Task<decimal> BeneficeDuMois()
+        { 
+
+            return 1;
+        }
+        public async Task<decimal> VentesDuMois()
+        {
+            DateTime debutMois = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime debutMoisSuivant = debutMois.AddMonths(1);
+
+            double total = await _appDbContext.SalesInvoices
+                .Where(c => c.DateInvoice >= debutMois &&
+                            c.DateInvoice < debutMoisSuivant)
+                .CountAsync();
+
+            return (decimal)total;
+        }
+        public async Task<decimal> AchatsDuMois(){  return 1;}
     }
 }

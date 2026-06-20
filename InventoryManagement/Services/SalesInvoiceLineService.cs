@@ -48,7 +48,8 @@ namespace InventoryManagement.Services
             // Vérification du stock
             if (product.StockQuantity < entity.Quantity)
             {
-                throw new Exception("Quantité insuffisante en stock.");
+                 throw new Exception($"Quantité insuffisante en stock pour le produit : {entity.Designation}");
+
             }
 
             await _repository.Insert(entity);

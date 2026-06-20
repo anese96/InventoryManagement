@@ -1,5 +1,6 @@
 using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
+using InventoryManagement.Data.Entity;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
 using InventoryManagement.Repositorys;
@@ -61,6 +62,7 @@ namespace InventoryManagement.UI.VentesComptoir
         private readonly ClientService _clientService;
         private readonly ProduitRepository _produitRepository;
         private readonly IService<SalesInvoiceLineDto> _lineService;
+        private List<Product> _cachedProducts = new List<Product>();
 
 
         public AjouterVentesComptoir( AppDbContext appdbContext , IService<SalesInvoicesDto> service
@@ -79,8 +81,17 @@ namespace InventoryManagement.UI.VentesComptoir
             this.WindowState = FormWindowState.Maximized;
             this.KeyPreview = true; // For shortcuts
             this.KeyDown += AddCounterSalesForm_KeyDown;
-            this.Load += (s, e) => { LoadFavorites(); LoadSearchAutoComplete(); LoadPendingCarts(); LoadClientAutoComplete(); };
-       
+            this.Load += async (s, e) => 
+            { 
+                await LoadCachedProductsAsync();
+                LoadFavorites(); 
+                LoadSearchAutoComplete(); 
+                LoadPendingCarts(); 
+                LoadClientAutoComplete(); 
+            };
+            this.txtSearch.Select();
+
+
         }
         private void SetupCustomUI()
         {
@@ -279,6 +290,7 @@ namespace InventoryManagement.UI.VentesComptoir
             txtSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
             txtSearch.AutoCompleteCustomSource = new AutoCompleteStringCollection();
             txtSearch.KeyDown += TxtSearch_KeyDown;
+            txtSearch.TextChanged += TxtSearch_TextChanged;
             searchPanel.Controls.Add(txtSearch);
             mainLayout.Controls.Add(searchPanel, 0, 2);
 
@@ -311,8 +323,8 @@ namespace InventoryManagement.UI.VentesComptoir
             //dgvCart.Columns.Add("CodeBarre", "Code Barre");
             dgvCart.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", Name = "IdProduct", ReadOnly = true });
             dgvCart.Columns["IdProduct"].Visible = false;
-            dgvCart.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Réf", Name = "Ref", ReadOnly = true });
-            dgvCart.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Désignation", Name = "Designation", ReadOnly = true });
+            dgvCart.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Réf", Name = "Ref", ReadOnly = true, FillWeight = 150 });
+            dgvCart.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Désignation", Name = "Designation", ReadOnly = true , FillWeight = 300 });
             dgvCart.Columns.Add(new DataGridViewComboBoxColumn { HeaderText = "Tarification", Name = "Tarification", ReadOnly = false });
             dgvCart.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Code Barre", Name = "CodeBarre", ReadOnly = true });
 
@@ -495,64 +507,111 @@ namespace InventoryManagement.UI.VentesComptoir
             }
         }
 
-        private void SearchAndAddProduct(string query)
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
         {
-            using (var db = new AppDbContext())
+            string query = txtSearch.Text.Trim();
+            if (query.Length >= 4)
             {
-                // Try Exact Barcode Match first
-                var product = db.Products.FirstOrDefault(p => p.BarCode == query);
-
-                // If not found, try Exact Ref
-                if (product == null)
-                    product = db.Products.FirstOrDefault(p => p.RefProduct == query);
-
-                // If not found, try partial Designation logic
-                if (product == null)
+                var product = _cachedProducts.FirstOrDefault(p => p.BarCode == query);
+                if (product != null)
                 {
-                    // Optional: Fuzzy search? 
-                    // For now, if not found, beep.
-                    // Or check slightly fuzzier?
-                    product = db.Products.FirstOrDefault(p => p.Designation.Contains(query));
-
-                    if (product == null)
-                    {
-                        System.Media.SystemSounds.Beep.Play();
-                        return;
-                    }
+                    txtSearch.TextChanged -= TxtSearch_TextChanged;
+                    txtSearch.Clear();
+                    AddToGrid(product, bypassDialog: false);
+                    txtSearch.Focus();
+                    txtSearch.TextChanged += TxtSearch_TextChanged;
                 }
-
-                AddToGrid(product);
             }
         }
 
-        private void AddToGrid(Product product)
+        private void SearchAndAddProduct(string query)
+        {
+            // Try Exact Barcode Match first in memory
+            var product = _cachedProducts.FirstOrDefault(p => p.BarCode == query);
+            if (product != null)
+            {
+                AddToGrid(product, bypassDialog: false);
+                return;
+            }
+
+            // If not found, try Exact Ref in memory
+            product = _cachedProducts.FirstOrDefault(p => p.RefProduct == query);
+            if (product != null)
+            {
+                AddToGrid(product, bypassDialog: false);
+                return;
+            }
+
+            // If not found, try partial Designation logic in memory
+            product = _cachedProducts.FirstOrDefault(p => p.Designation != null && p.Designation.Contains(query, StringComparison.OrdinalIgnoreCase));
+            if (product != null)
+            {
+                AddToGrid(product, bypassDialog: false);
+                return;
+            }
+
+            // If still not found, query database
+            using (var db = new AppDbContext())
+            {
+                product = db.Products.AsNoTracking().Include(p => p.PriceLists).FirstOrDefault(p => p.BarCode == query);
+                if (product != null)
+                {
+                    _cachedProducts.Add(product);
+                    AddToGrid(product, bypassDialog: false);
+                    return;
+                }
+
+                product = db.Products.AsNoTracking().Include(p => p.PriceLists).FirstOrDefault(p => p.RefProduct == query);
+                if (product != null)
+                {
+                    _cachedProducts.Add(product);
+                    AddToGrid(product, bypassDialog: false);
+                    return;
+                }
+
+                product = db.Products.AsNoTracking().Include(p => p.PriceLists).FirstOrDefault(p => p.Designation.Contains(query));
+                if (product != null)
+                {
+                    _cachedProducts.Add(product);
+                    AddToGrid(product, bypassDialog: false);
+                    return;
+                }
+            }
+
+            System.Media.SystemSounds.Beep.Play();
+        }
+
+        private void AddToGrid(Product product, bool bypassDialog = false)
         {
             decimal chosenQty = 1;
             decimal chosenPrice = product.SalesPrice ?? 0;
             decimal chosenQtePack = 0;
-            object chosenTarifVal = product.SalesPrice;
+            object chosenTarifVal = product.SalesPrice ?? 0m;
 
-            try
+            if (!bypassDialog)
             {
-                using (var scope = Program.ServiceProvider.CreateScope())
+                try
                 {
-                    var qtePrixForm = scope.ServiceProvider.GetRequiredService<Qte__Prix>();
-                    qtePrixForm.LoadProductData(product);
-                    if (qtePrixForm.ShowDialog() != DialogResult.OK)
+                    using (var scope = Program.ServiceProvider.CreateScope())
                     {
-                        return; // User cancelled
-                    }
+                        var qtePrixForm = scope.ServiceProvider.GetRequiredService<Qte__Prix>();
+                        qtePrixForm.LoadProductData(product);
+                        if (qtePrixForm.ShowDialog() != DialogResult.OK)
+                        {
+                            return; // User cancelled
+                        }
 
-                    decimal.TryParse(qtePrixForm.Qte.Text, out chosenQty);
-                    decimal.TryParse(qtePrixForm.Prix.Text, out chosenPrice);
-                    decimal.TryParse(qtePrixForm.Qte_pack.Text, out chosenQtePack);
-                    chosenTarifVal = qtePrixForm.Tarification.SelectedValue;
+                        decimal.TryParse(qtePrixForm.Qte.Text, out chosenQty);
+                        decimal.TryParse(qtePrixForm.Prix.Text, out chosenPrice);
+                        decimal.TryParse(qtePrixForm.Qte_pack.Text, out chosenQtePack);
+                        chosenTarifVal = qtePrixForm.Tarification.SelectedValue;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur lors de l'ouverture de la saisie de quantité/prix: " + ex.Message);
-                return;
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erreur lors de l'ouverture de la saisie de quantité/prix: " + ex.Message);
+                    return;
+                }
             }
 
             // Check if exists
@@ -597,22 +656,21 @@ namespace InventoryManagement.UI.VentesComptoir
             // Populate Tarification
             try
             {
-                using (var db = new AppDbContext())
+                var options = new List<PriceOption>();
+                options.Add(new PriceOption { Display = $"Standard ({product.SalesPrice:N2})", Value = product.SalesPrice });
+                if (product.PriceLists != null)
                 {
-                    var priceLists = db.PriceLists.Where(pl => pl.ProductId == product.Id).ToList();
-                    var options = new List<PriceOption>();
-                    options.Add(new PriceOption { Display = $"Standard ({product.SalesPrice:N2})", Value = product.SalesPrice });
-                    foreach (var pl in priceLists)
+                    foreach (var pl in product.PriceLists)
                     {
                         options.Add(new PriceOption { Display = $"{pl.Name} ({pl.Price:N2})", Value = pl.Price });
                     }
-
-                    var tarifCell = (DataGridViewComboBoxCell)dgvCart.Rows[index].Cells["Tarification"];
-                    tarifCell.DataSource = options;
-                    tarifCell.DisplayMember = "Display";
-                    tarifCell.ValueMember = "Value";
-                    tarifCell.Value = chosenTarifVal;
                 }
+
+                var tarifCell = (DataGridViewComboBoxCell)dgvCart.Rows[index].Cells["Tarification"];
+                tarifCell.DataSource = options;
+                tarifCell.DisplayMember = "Display";
+                tarifCell.ValueMember = "Value";
+                tarifCell.Value = chosenTarifVal;
             }
             catch { }
 
@@ -839,6 +897,7 @@ namespace InventoryManagement.UI.VentesComptoir
                 };
                 await _service.AddAsync(salesInvoicesDto);
                 await SaveLinesProducts(dgvCart, salesInvoicesDto.Id, context);
+               
                 if (selectedCustomer != null)
                 {
                     await _clientService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);
@@ -848,7 +907,9 @@ namespace InventoryManagement.UI.VentesComptoir
                     await _clientService.UpdateTurnoverAsync(selectedCustomer.Id, (decimal)numTotalTTC.Value);
                 }
                 MessageBox.Show("Vente ajoutée avec succès");
-                this.DialogResult = DialogResult.OK;
+                // this.DialogResult = DialogResult.OK;
+                Clear();
+
 
 
             }
@@ -858,6 +919,43 @@ namespace InventoryManagement.UI.VentesComptoir
                 this.DialogResult = DialogResult.OK;
             }
         }
+
+        private void Clear()
+        {
+            // Cart
+            dgvCart.Rows.Clear();
+
+            // Info section
+            txtClient.Clear();
+            txtTicketNumber.Text = "TCK-" + DateTime.Now.ToString("HHmmss");
+            dtpDate.Value = DateTime.Now;
+
+            // Search bar
+            txtSearch.Clear();
+
+            // Footer numeric fields
+            numRemise.ValueChanged -= CalculateTotals;
+            numMontantPaye.ValueChanged -= CalculateTotals;
+
+            numTotalHT.Value = 0;
+            numRemise.Value = 0;
+            numTotalHTRemise.Value = 0;
+            numTotalTVA.Value = 0;
+            numTotalTTC.Value = 0;
+            numMontantPaye.Value = 0;
+            numResteAPayer.Value = 0;
+
+            numRemise.ValueChanged += CalculateTotals;
+            numMontantPaye.ValueChanged += CalculateTotals;
+
+            // Header total display
+            _totalTTC = 0;
+            _change = 0;
+            lblTotalDisplay.Text = "0.00 DA";
+
+            txtSearch.Focus();
+        }
+
         public async Task SaveLinesProducts(DataGridView dataGridView, int idSalesInvoice, AppDbContext context)
         {
             foreach (DataGridViewRow row in dataGridView.Rows)
@@ -1174,7 +1272,7 @@ namespace InventoryManagement.UI.VentesComptoir
 
             Label lblPrice = new Label
             {
-                Text      = $"{product.SalesPrice:N2} DA",
+                Text      = $"{product.SalesPrice:N2} DA  /  {product.StockQuantity} ",
                 Font      = new Font("Segoe UI", 10),
                 ForeColor = Color.FromArgb(225, 240, 240),
                 AutoSize  = false,
@@ -1207,10 +1305,18 @@ namespace InventoryManagement.UI.VentesComptoir
             {
                 try
                 {
-                    using (var db = new AppDbContext())
+                    var cached = _cachedProducts.FirstOrDefault(p => p.Id == product.Id);
+                    if (cached != null)
                     {
-                        var fresh = db.Products.Find(product.Id);
-                        if (fresh != null) AddToGrid(fresh);
+                        AddToGrid(cached);
+                    }
+                    else
+                    {
+                        using (var db = new AppDbContext())
+                        {
+                            var fresh = db.Products.Find(product.Id);
+                            if (fresh != null) AddToGrid(fresh);
+                        }
                     }
                     txtSearch.Focus();
                 }
@@ -1280,27 +1386,38 @@ namespace InventoryManagement.UI.VentesComptoir
         {
             try
             {
-                using (var db = new AppDbContext())
+                var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var it in _cachedProducts)
                 {
-                    var items = db.Products.AsNoTracking()
-                        .Select(p => new { p.RefProduct, p.Designation })
-                        .ToList();
-
-                    var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var it in items)
-                    {
-                        if (!string.IsNullOrWhiteSpace(it.RefProduct)) set.Add(it.RefProduct);
-                        if (!string.IsNullOrWhiteSpace(it.Designation)) set.Add(it.Designation);
-                    }
-
-                    var ac = new AutoCompleteStringCollection();
-                    ac.AddRange(set.ToArray());
-                    txtSearch.AutoCompleteCustomSource = ac;
+                    if (!string.IsNullOrWhiteSpace(it.RefProduct)) set.Add(it.RefProduct);
+                    if (!string.IsNullOrWhiteSpace(it.Designation)) set.Add(it.Designation);
                 }
+
+                var ac = new AutoCompleteStringCollection();
+                ac.AddRange(set.ToArray());
+                txtSearch.AutoCompleteCustomSource = ac;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("LoadSearchAutoComplete error: " + ex.Message);
+            }
+        }
+
+        private async Task LoadCachedProductsAsync()
+        {
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    _cachedProducts = await db.Products
+                        .AsNoTracking()
+                        .Include(p => p.PriceLists)
+                        .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadCachedProductsAsync error: " + ex.Message);
             }
         }
 
@@ -1768,7 +1885,7 @@ namespace InventoryManagement.UI.VentesComptoir
             {
                 var RefProduct = row.Cells["Ref"].Value?.ToString();
                 var Designation = row.Cells["Designation"].Value?.ToString();
-
+                var Qte = Convert.ToDecimal(row.Cells["Qte"].Value?.ToString());
 
                 if (string.IsNullOrWhiteSpace(RefProduct) && string.IsNullOrWhiteSpace(Designation))
                 {
@@ -1782,8 +1899,18 @@ namespace InventoryManagement.UI.VentesComptoir
                 // Vérification du stock
                 var product = _appContext.Products
               .FirstOrDefault(x => x.Id == Convert.ToInt32(row.Cells["IdProduct"].Value));
+                if (product.StockQuantity < Qte)
+                {
+                    MessageBox.Show(
+                      $"Quantité insuffisante en stock pour le produit : {Designation}",
+                      "Validation",
+                      MessageBoxButtons.OK,
+                      MessageBoxIcon.Warning);
+                    return false;
+                }
 
-            }
+
+                }
             if (dgvCart.Rows.Count == 0 || string.IsNullOrWhiteSpace(txtTicketNumber.Text))
             {
                 MessageBox.Show(
@@ -1794,6 +1921,7 @@ namespace InventoryManagement.UI.VentesComptoir
 
                 return false;
             }
+
 
             return true;
         }

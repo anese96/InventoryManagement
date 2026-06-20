@@ -1,4 +1,5 @@
 ﻿using InventoryManagement.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,19 @@ namespace InventoryManagement.UI.Dashboard
         {
             _appDbContext = appDbContext;
         }
-        public decimal StockTotal(){  return 1;}
-        public decimal ValeurStock(){  return 1;}
+        public async Task<decimal> StockTotal()
+        {
+            int count = await _appDbContext.Products.CountAsync();
+            if (count == 0)
+                return 0;
+            return count;
+        }
+        public async Task<decimal> ValeurStock()
+        {
+            decimal total = await _appDbContext.Products.
+                SumAsync(p => (decimal?)p.StockQuantity * p.PurchasePrice) ?? 0;
+            return total;
+        }
         public decimal RuptureStock(){  return 1;}
         public decimal FaibleStock(){  return 1; }
     }
