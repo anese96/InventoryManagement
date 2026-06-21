@@ -46,7 +46,7 @@ namespace InventoryManagement.UI
             Grid = new DataGridView
             {
                 Location = new Point(30, 250),
-                Size = new Size(1500, 500),
+                Size = new Size(1500, 700),
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 BackgroundColor = Color.White,
                 AllowUserToAddRows = false,
