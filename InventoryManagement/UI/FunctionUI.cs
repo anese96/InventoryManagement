@@ -10,7 +10,7 @@ namespace InventoryManagement.UI
 {
     public class FunctionUI 
     {
-       
+        private static readonly Random random = new();
         public void AddFormField(Panel parent, string labelText, int labelW, int fieldW, int fieldH, int spacing, out TextBox textBox, string format = "", string defaultValue = "0", bool isNumeric = true)
         {
             Panel p = new Panel { Size = new Size(labelW + fieldW + 20, fieldH + 5), Margin = new Padding(0, 0, 0, spacing) };
@@ -109,12 +109,47 @@ namespace InventoryManagement.UI
             }
             return 0;
         }
-     
 
-        public string GenerateBarcode()
+
+        //public string GenerateBarcode()
+        //{
+        //    // Simple generation based on timestamp to ensure uniqueness
+        //    return DateTime.Now.ToString("yyMMddHHmmss");
+        //}
+        public  string GenerateBarcode()
         {
-            // Simple generation based on timestamp to ensure uniqueness
-            return DateTime.Now.ToString("yyMMddHHmmss");
+            // Préfixe GS1 Algérie
+            string prefix = "613";
+
+            // Génère 9 chiffres aléatoires
+            string body = string.Concat(
+                Enumerable.Range(0, 9)
+                          .Select(_ => random.Next(10).ToString()));
+
+            // 12 premiers chiffres
+            string code12 = prefix + body;
+
+            // Calcul du chiffre de contrôle
+            int checkDigit = CalculateEAN13CheckDigit(code12);
+
+            return code12 + checkDigit;
+        }
+        private static int CalculateEAN13CheckDigit(string code12)
+        {
+            if (code12.Length != 12)
+                throw new ArgumentException("Le code doit contenir 12 chiffres.");
+
+            int sum = 0;
+
+            for (int i = 0; i < 12; i++)
+            {
+                int digit = code12[i] - '0';
+
+                // Position impaire = x1, paire = x3
+                sum += (i % 2 == 0) ? digit : digit * 3;
+            }
+
+            return (10 - (sum % 10)) % 10;
         }
 
         internal void BtnCancel_Click(object? sender, EventArgs e)

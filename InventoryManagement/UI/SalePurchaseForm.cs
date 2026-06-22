@@ -80,7 +80,8 @@ namespace InventoryManagement.UI
             {
             var RefProduct = row.Cells["RefProduit"].Value?.ToString();
             var Designation = row.Cells["Designation"].Value?.ToString();
-               
+            var Qte = Convert.ToDecimal(row.Cells["Qte"].Value?.ToString());
+
 
                 if (string.IsNullOrWhiteSpace(RefProduct) && string.IsNullOrWhiteSpace(Designation))
                 {
@@ -94,7 +95,16 @@ namespace InventoryManagement.UI
                 // Vérification du stock
                 var product = _appContext.Products
               .FirstOrDefault(x => x.Id == Convert.ToInt32(row.Cells["IdProduct"].Value));
-           
+                if (product.StockQuantity < Qte)
+                {
+                    MessageBox.Show(
+                      $"Quantité insuffisante en stock pour le produit : {Designation}",
+                      "Validation",
+                      MessageBoxButtons.OK,
+                      MessageBoxIcon.Warning);
+                    return false;
+                }
+
             }
             if (dgvArticles.Rows.Count == 0 || string.IsNullOrWhiteSpace(txtNumFacture.Text))
             {

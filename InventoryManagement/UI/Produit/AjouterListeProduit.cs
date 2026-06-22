@@ -25,6 +25,7 @@ namespace InventoryManagement.UI.Produit
         private CheckBox cbAutoRef;
         private CheckBox cbAutcode;
         private readonly AppDbContext _appDbContext;
+        private readonly FunctionUI _functionUI;
 
         private List<Category> _categories = new();
         private List<Unit> _units = new();
@@ -39,11 +40,12 @@ namespace InventoryManagement.UI.Produit
         private readonly Font HeaderFont = new Font("Segoe UI", 18, FontStyle.Bold);
         private readonly Font StandardFont = new Font("Segoe UI", 10, FontStyle.Bold);
 
-        public AjouterListeProduit(AppDbContext appDbContext , IService<ProduitDto> service)
+        public AjouterListeProduit(AppDbContext appDbContext , IService<ProduitDto> service , FunctionUI functionUI)
         {
 
             _appDbContext = appDbContext;
             _service = service;
+            _functionUI = functionUI;
             InitializeComponent();
             InitializeCustomComponents();
             BtnAddRow_Click(null, null);
@@ -112,7 +114,7 @@ namespace InventoryManagement.UI.Produit
             {
                 Name = "dgvArticles",
                 Location = new Point(10, yPosition),
-                Size = new Size(1200, 700), //new Size(mainPanel.Width - 40, mainPanel.Height - yPosition - 80),
+                Size = new Size(1200, 200), //new Size(mainPanel.Width - 40, mainPanel.Height - yPosition - 80),
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
@@ -225,7 +227,8 @@ namespace InventoryManagement.UI.Produit
             mainPanel.Controls.Add(btnCancel);
             btnCancel.Click += BtnCancel_Click;
 
-            Button btnSave = CreateStyledButton("💾 Enregistrer", Color.FromArgb(39, 174, 96), new Size(150, 45), Point.Empty, 12);
+            Button btnSave = CreateStyledButton("💾 Enregistrer", Color.FromArgb(39, 174, 96),
+                new Size(150, 45), Point.Empty, 12);
             btnSave.Location = new Point(mainPanel.Width - 170, dgvArticles.Bottom + 20);
             btnSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             mainPanel.Controls.Add(btnSave);
@@ -297,7 +300,7 @@ namespace InventoryManagement.UI.Produit
             string barCode = "";
             if (cbAutcode != null && cbAutcode.Checked)
             {
-                barCode = GenerateBarcode();
+                barCode = _functionUI.GenerateBarcode();
             }
 
             int rowIndex = dgvArticles.Rows.Add(refProduit, "", barCode, null, null, "0.00", "0.00", "0.00", "0", "0%", null, "0");
@@ -767,11 +770,11 @@ namespace InventoryManagement.UI.Produit
             }
             return 0;
         }
-        private string GenerateBarcode()
-        {
-            // Simple generation based on timestamp to ensure uniqueness
-            return DateTime.Now.ToString("yyMMddHHmmss");
-        }
+        //private string GenerateBarcode()
+        //{
+        //    // Simple generation based on timestamp to ensure uniqueness
+        //    return DateTime.Now.ToString("yyMMddHHmmss");
+        //}
         private void BtnCancel_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;

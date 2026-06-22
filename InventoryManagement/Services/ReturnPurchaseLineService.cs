@@ -45,10 +45,10 @@ namespace InventoryManagement.Services
                 throw new Exception("Produit introuvable.");
 
             // Vérification du stock
-            if (product.StockQuantity < entity.Quantity)
-            {
-                throw new Exception("Quantité insuffisante en stock.");
-            }
+            //if (product.StockQuantity < entity.Quantity)
+            //{
+            //    throw new Exception("Quantité insuffisante en stock.");
+            //}
 
             await _repository.Insert(entity);
         }

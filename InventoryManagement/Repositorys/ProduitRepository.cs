@@ -36,10 +36,10 @@ namespace InventoryManagement.Repositorys
             }
             else
             {
-                if (produit.StockQuantity < qty)
-                {
-                    throw new Exception($"La quantité est insuffisante pour le produit: {produit.Designation}");
-                }
+                //if (produit.StockQuantity < qty)
+                //{
+                //    throw new Exception($"La quantité est insuffisante pour le produit: {produit.Designation}");
+                //}
                 produit.StockQuantity -= qty;
             }
             await _appContext.SaveChangesAsync();
