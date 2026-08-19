@@ -152,8 +152,8 @@ namespace InventoryManagement.UI.Produit
                 barcodePanel.Controls.Add(cbAutoBarecode);
             }
             _functionUI.AddComboBoxField(leftPanel, "Catégorie:", lblW, fldW, spc, out cbCategory);
-            _functionUI.AddFormField(leftPanel, "Prix Achat:", lblW, fldW, 30, spc, out txtPurchasePrice, "N2", "0.00");
-            _functionUI.AddFormField(leftPanel, "Prix Vente:", lblW, fldW, 30, spc, out txtSalesPrice, "N2", "0.00");
+            _functionUI.AddFormField(leftPanel, "Prix Achat:", lblW, fldW, 30, spc, out txtPurchasePrice, "N20", "0.00");
+            _functionUI.AddFormField(leftPanel, "Prix Vente:", lblW, fldW, 30, spc, out txtSalesPrice, "N20", "0.00");
 
 
             _functionUI.AddFormField(leftPanel, "Stock Initial:", lblW, fldW, 30, spc, out txtStock);

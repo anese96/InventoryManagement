@@ -26,8 +26,8 @@ namespace InventoryManagement.Data.Models
         [MaxLength(1000)]
         public string Remark { get; set; }
 
-        public decimal? Balance { get; set; } // Solde
-        public decimal? Turnover { get; set; } /// Chiffre d'affaire
+        public decimal? Balance { get; set; } = 0; // Solde
+        public decimal? Turnover { get; set; } = 0;/// Chiffre d'affaire
 
         public List<Purchase> Purchases { get; set; }
     }

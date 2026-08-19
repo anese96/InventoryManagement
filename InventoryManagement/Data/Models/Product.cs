@@ -25,6 +25,7 @@ namespace InventoryManagement.Data.Models
         [MaxLength(500)]
         public string? Taxe { get; set; }
         public string? BarCode { get; set; }
+
         public decimal? PurchasePrice { get; set; }
         public decimal? SalesPrice { get; set; }
 

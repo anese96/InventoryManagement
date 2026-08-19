@@ -20,11 +20,11 @@ namespace InventoryManagement.Data.Models
         [ForeignKey(nameof(Customer))]
         public int? IdCustomer { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalInvoice { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalReturn { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? GapTotal { get; set; } // Ecart
 
         [ForeignKey(nameof(Crates))]

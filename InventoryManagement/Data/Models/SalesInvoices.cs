@@ -20,19 +20,19 @@ namespace InventoryManagement.Data.Models
 
         [ForeignKey(nameof(Customer))]
         public int? IdCustomer { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalWithoutTax { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? Remise { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalWithoutTaxRemise { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalTax { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalInvoice { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? PaymentInvoice { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? BalanceInvoice { get; set; }
         [ForeignKey(nameof(Crates))]
         public int? IdCrates { get; set; }

@@ -21,11 +21,11 @@ namespace InventoryManagement.Data.Models
         [ForeignKey(nameof(Vendor))]
         public int? IdVendor { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalPurchase { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? TotalReturn { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? GapTotal { get; set; } // Ecart
 
         [ForeignKey(nameof(Crates))]

@@ -26,12 +26,12 @@ namespace InventoryManagement.Data.Models
         public string Designation { get; set; }
         [Required]
         public decimal Quantity { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         [Required]
         public decimal Price { get; set; }
 
         public string Taxe { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         [Required]
         public decimal TotalWithoutTax { get; set; }
 

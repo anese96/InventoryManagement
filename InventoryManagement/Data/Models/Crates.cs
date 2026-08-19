@@ -9,5 +9,6 @@ namespace InventoryManagement.Data.Models
 {
     public class Crates : BaseEntity
     {
+        public decimal? Totale { get; set; } = 0;
     }
 }

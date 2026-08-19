@@ -22,7 +22,7 @@ namespace InventoryManagement.Data.Models
         [Required]
         public DateTime DatePayment { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 20)")]
         [Required]
         public decimal? Payment { get; set; } //  Montant
         [ForeignKey(nameof(Crates))]

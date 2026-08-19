@@ -7,6 +7,7 @@ namespace InventoryManagement.Data.Models
     {
         [ForeignKey(nameof(Product))]
         public int ProductId { get; set; }       
+        [Column(TypeName = "decimal(18, 20)")]
         public decimal? Price { get; set; }
 
         public Product Product { get; set; }
