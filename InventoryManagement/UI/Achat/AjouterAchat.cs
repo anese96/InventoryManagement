@@ -23,19 +23,21 @@ namespace InventoryManagement.UI.Achat
         private readonly FunctionUI _functionUI;
         private readonly ProduitRepository _produitRepository;
         private readonly VendorService _vendorService;
-        public AjouterAchat(FunctionUI functionUI, IService<PurchaseDto> service, IService<PurchaseLineDto> lineService, ProduitRepository produitRepository, VendorService vendorService, AppDbContext appDbContext) :
+        private readonly CratesRepository _cratesRepository;
+        public AjouterAchat(FunctionUI functionUI, IService<PurchaseDto> service, IService<PurchaseLineDto> lineService, ProduitRepository produitRepository, VendorService vendorService, AppDbContext appDbContext, CratesRepository cratesRepository) :
           base(functionUI, appDbContext)
         {
             _produitRepository = produitRepository;
             _functionUI = functionUI;
             _service = service;
             _lineService = lineService;
-           _vendorService = vendorService;
+            _vendorService = vendorService;
             InitializeComponent();
             BtnAddRow_Click(null, null);
             Title = "🛒 NOUVELLE ACHAT";
-            Client_Fournisseur="Fournisseur:";
+            Client_Fournisseur = "Fournisseur:";
             dgvArticles.Columns["Tarification"].Visible = false;
+            _cratesRepository = cratesRepository;
         }
 
 
@@ -69,7 +71,7 @@ namespace InventoryManagement.UI.Achat
                     {
                         if (decimal.TryParse(row.Cells["Tarification"].Value.ToString(), out decimal p))
                         {
-                            row.Cells["Prix"].Value = p.ToString("N2");
+                            row.Cells["Prix"].Value = p.ToString("N6");
                         }
                     }
                 }
@@ -88,7 +90,7 @@ namespace InventoryManagement.UI.Achat
                     {
                         var priceLists = _appContext.PriceLists.Where(pl => pl.ProductId == product.Id).ToList();
                         var options = new System.Collections.Generic.List<PriceOption>();
-                        options.Add(new PriceOption { Display = $"Standard ({product.PurchasePrice:N2})", Value = product.PurchasePrice });
+                        options.Add(new PriceOption { Display = $"Standard ({product.PurchasePrice:N6})", Value = product.PurchasePrice });
                         foreach (var pl in priceLists)
                         {
                             options.Add(new PriceOption { Display = $"{pl.Name} ({pl.Price:N2})", Value = pl.Price });
@@ -102,7 +104,7 @@ namespace InventoryManagement.UI.Achat
                     }
                     catch { }
 
-                    row.Cells["Prix"].Value = product.PurchasePrice?.ToString("N2") ?? "0.00";
+                    row.Cells["Prix"].Value = product.PurchasePrice?.ToString("N6") ?? "0.000000";
                     row.Cells["TVA"].Value = product.Taxe.ToString();
                     row.Cells["Qte"].Value = "1";
 
@@ -147,6 +149,7 @@ namespace InventoryManagement.UI.Achat
                 };
                 await _service.AddAsync(purchaseDto);
                 await SaveLinesProducts(dgvArticles, purchaseDto.Id, context);
+                await _cratesRepository.AddMoney((cbxCaisse.SelectedItem as Crates).Id, -(decimal)numMontantPaye.Value);
                 if (selectedCustomer != null)
                 {
                     await _vendorService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);

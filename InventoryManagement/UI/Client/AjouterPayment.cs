@@ -2,6 +2,7 @@ using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Repositorys;
 using InventoryManagement.Services;
 using System;
 using System.Collections.Generic;
@@ -31,15 +32,17 @@ namespace InventoryManagement.UI.Client
         private AppDbContext appDbContext;
         private VendorService vendorService;
         private readonly ClientService _clientService;
+        private readonly CratesRepository _cratesRepository;
 
         public AjouterPayment(int idCustomer, FunctionUI functionUI, IService<PaymentCustomerDto> service,
-            AppDbContext appDbContext, ClientService clientService)
+            AppDbContext appDbContext, ClientService clientService , CratesRepository cratesRepository)
         {
             _idCustomer = idCustomer;
              _functionUI = functionUI;
              _service = service;
              _appContext = appDbContext;
              _clientService = clientService;
+            _cratesRepository = cratesRepository;
             InitializeComponent();
             InitializeCustomComponents();
         }
@@ -186,7 +189,7 @@ namespace InventoryManagement.UI.Client
                 };
                 await _service.AddAsync(clientDto);
                 await _clientService.UpdateBalanceAsync(_idCustomer, -(clientDto.Payment.Value));
-
+                await _cratesRepository.AddMoney((int)cbCaisse.SelectedValue, decimal.Parse(txtAmount.Text.Trim()));
                 MessageBox.Show("Payment ajouté avec succès");
                 this.DialogResult = DialogResult.OK;
             }

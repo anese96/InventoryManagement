@@ -63,11 +63,14 @@ namespace InventoryManagement.UI.VentesComptoir
         private readonly ProduitRepository _produitRepository;
         private readonly IService<SalesInvoiceLineDto> _lineService;
         private List<Product> _cachedProducts = new List<Product>();
+        private readonly CratesRepository _cratesRepository;
 
 
         public AjouterVentesComptoir( AppDbContext appdbContext , IService<SalesInvoicesDto> service
             
-           ,ClientService clientService,ProduitRepository produitRepository,IService<SalesInvoiceLineDto> service1 )
+           ,ClientService clientService,ProduitRepository produitRepository,IService<SalesInvoiceLineDto> service1
+            , CratesRepository cratesRepository
+            )
         {
             InitializeComponent();
             _appContext = appdbContext;
@@ -75,6 +78,7 @@ namespace InventoryManagement.UI.VentesComptoir
             _clientService = clientService;
             _produitRepository  = produitRepository;
             _lineService = service1;
+            _cratesRepository = cratesRepository;
             SetupCustomUI();
 
             // Set full screen/maximized for POS feel
@@ -657,12 +661,12 @@ namespace InventoryManagement.UI.VentesComptoir
             try
             {
                 var options = new List<PriceOption>();
-                options.Add(new PriceOption { Display = $"Standard ({product.SalesPrice:N2})", Value = product.SalesPrice });
+                options.Add(new PriceOption { Display = $"Standard ({product.SalesPrice:N6})", Value = product.SalesPrice });
                 if (product.PriceLists != null)
                 {
                     foreach (var pl in product.PriceLists)
                     {
-                        options.Add(new PriceOption { Display = $"{pl.Name} ({pl.Price:N2})", Value = pl.Price });
+                        options.Add(new PriceOption { Display = $"{pl.Name} ({pl.Price:N6})", Value = pl.Price });
                     }
                 }
 
@@ -773,7 +777,7 @@ namespace InventoryManagement.UI.VentesComptoir
             decimal.TryParse(row.Cells["Prix"].Value?.ToString(), out price);
 
             dgvCart.CellValueChanged -= DgvCart_CellValueChanged;
-            row.Cells["TotalHT"].Value = (qty * price).ToString("N2");
+            row.Cells["TotalHT"].Value = (qty * price).ToString("N6");
             dgvCart.CellValueChanged += DgvCart_CellValueChanged;
         }
 
@@ -799,7 +803,7 @@ namespace InventoryManagement.UI.VentesComptoir
             }
 
             _totalTTC = totalTTC;
-            lblTotalDisplay.Text = _totalTTC.ToString("N2") + " DA";
+            lblTotalDisplay.Text = _totalTTC.ToString("N6") + " DA";
             CalculateChange();
         }
 
@@ -855,7 +859,7 @@ namespace InventoryManagement.UI.VentesComptoir
             numMontantPaye.ValueChanged += CalculateTotals;
 
             _totalTTC = totalTTC;
-            lblTotalDisplay.Text = _totalTTC.ToString("N2") + " DA";
+            lblTotalDisplay.Text = _totalTTC.ToString("N6") + " DA";
 
             RecalculateBalance();
 
@@ -897,7 +901,8 @@ namespace InventoryManagement.UI.VentesComptoir
                 };
                 await _service.AddAsync(salesInvoicesDto);
                 await SaveLinesProducts(dgvCart, salesInvoicesDto.Id, context);
-               
+                await _cratesRepository.AddMoney((cbxCaisse.SelectedItem as Crates).Id, (decimal)numMontantPaye.Value);
+
                 if (selectedCustomer != null)
                 {
                     await _clientService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);
@@ -1539,7 +1544,7 @@ namespace InventoryManagement.UI.VentesComptoir
                 Size = new Size(fieldW, 25),
                 Location = new Point(20 + labelW, yPos),
                 Maximum = 99999999999999,
-                DecimalPlaces = 2,
+                DecimalPlaces = 6,
                 ThousandsSeparator = true
             };
             parent.Controls.Add(numericUpDown);
@@ -1589,7 +1594,7 @@ namespace InventoryManagement.UI.VentesComptoir
                 Size = new Size(fieldW, 25),
                 Location = new Point(xPos + labelW, yPos),
                 Maximum = 99999999999999,
-                DecimalPlaces = 2,
+                DecimalPlaces = 6,
                 ThousandsSeparator = true
             };
             parent.Controls.Add(numericUpDown);

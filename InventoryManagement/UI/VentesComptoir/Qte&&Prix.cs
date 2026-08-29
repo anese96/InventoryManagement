@@ -154,7 +154,7 @@ namespace InventoryManagement.UI.VentesComptoir
             {
                 this.Qte_pack.Text = "0";
             }
-            this.Prix.Text = product.SalesPrice?.ToString("F2") ?? "0.00";
+            this.Prix.Text = product.SalesPrice?.ToString("F6") ?? "0.000000";
             _isUpdatingQty = false;
 
             // Populate Tarification options

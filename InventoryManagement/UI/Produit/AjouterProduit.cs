@@ -152,8 +152,8 @@ namespace InventoryManagement.UI.Produit
                 barcodePanel.Controls.Add(cbAutoBarecode);
             }
             _functionUI.AddComboBoxField(leftPanel, "Catégorie:", lblW, fldW, spc, out cbCategory);
-            _functionUI.AddFormField(leftPanel, "Prix Achat:", lblW, fldW, 30, spc, out txtPurchasePrice, "N20", "0.00");
-            _functionUI.AddFormField(leftPanel, "Prix Vente:", lblW, fldW, 30, spc, out txtSalesPrice, "N20", "0.00");
+            _functionUI.AddFormField(leftPanel, "Prix Achat:", lblW, fldW, 30, spc, out txtPurchasePrice, "N6", "0.000000");
+            _functionUI.AddFormField(leftPanel, "Prix Vente:", lblW, fldW, 30, spc, out txtSalesPrice, "N6", "0.000000");
 
 
             _functionUI.AddFormField(leftPanel, "Stock Initial:", lblW, fldW, 30, spc, out txtStock);
@@ -203,7 +203,7 @@ namespace InventoryManagement.UI.Produit
 
             dgvPriceLists.Columns.Add("Name", "Tarification");
             dgvPriceLists.Columns.Add("Price", "Prix");
-            dgvPriceLists.Columns[1].DefaultCellStyle.Format = "N2";
+            dgvPriceLists.Columns[1].DefaultCellStyle.Format = "N6";
 
             dgvPriceLists.Columns[0].Width = 300;
             dgvPriceLists.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;

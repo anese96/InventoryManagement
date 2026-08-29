@@ -24,9 +24,10 @@ namespace InventoryManagement.UI.Vente
         private readonly FunctionUI _functionUI;
         private readonly ProduitRepository _produitRepository;
         private readonly ClientService _clientService;
+        private readonly CratesRepository _cratesRepository;
 
 
-        public AjouterVente(FunctionUI functionUI , IService<SalesInvoicesDto> service, IService<SalesInvoiceLineDto> lineService, ProduitRepository produitRepository , ClientService clientService, AppDbContext appDbContext):
+        public AjouterVente(FunctionUI functionUI , IService<SalesInvoicesDto> service, IService<SalesInvoiceLineDto> lineService, ProduitRepository produitRepository , ClientService clientService, AppDbContext appDbContext , CratesRepository cratesRepository) :
             base(functionUI, appDbContext)
         {
             _produitRepository = produitRepository; 
@@ -34,6 +35,7 @@ namespace InventoryManagement.UI.Vente
             _service = service;
             _lineService = lineService;
             _clientService = clientService;
+            _cratesRepository = cratesRepository;
             InitializeComponent();
             BtnAddRow_Click(null, null);
             Title = "💰 NOUVELLE VENTE";
@@ -75,6 +77,7 @@ namespace InventoryManagement.UI.Vente
                 };
                 await _service.AddAsync(salesInvoicesDto);
                 await SaveLinesProducts(dgvArticles, salesInvoicesDto.Id, context);
+                await _cratesRepository.AddMoney((cbxCaisse.SelectedItem as Crates).Id, (decimal)numMontantPaye.Value);
                 if (selectedCustomer != null)
                 {
                     await _clientService.UpdateBalanceAsync(selectedCustomer.Id, (decimal)numResteAPayer.Value);

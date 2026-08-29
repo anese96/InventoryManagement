@@ -1,6 +1,15 @@
+using InventoryManagement.Data;
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
+using InventoryManagement.UI.Achat;
+using InventoryManagement.UI.Caisses;
+using InventoryManagement.UI.Client;
+using InventoryManagement.UI.Dashboard;
+using InventoryManagement.UI.Fournisseur;
 using InventoryManagement.UI.Produit;
+using InventoryManagement.UI.Vente;
+using InventoryManagement.UI.VentesComptoir;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,14 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Extensions.DependencyInjection;
-using InventoryManagement.UI.Client;
-using InventoryManagement.UI.Fournisseur;
-using InventoryManagement.UI.Vente;
-using InventoryManagement.UI.VentesComptoir;
-using InventoryManagement.UI.Achat;
-using InventoryManagement.Data;
-using InventoryManagement.UI.Dashboard;
 
 namespace InventoryManagement.UI
 {
@@ -519,6 +520,12 @@ namespace InventoryManagement.UI
         private void lblAppTitle_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnCounterSales_Click(object sender, EventArgs e)
+        {
+            SetActiveButton(btnCounterSales);
+            LoadFormInPanel(new ListeCaisses(_formFactory, _appContext));
         }
     }
 }

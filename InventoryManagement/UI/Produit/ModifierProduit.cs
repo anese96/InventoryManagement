@@ -52,8 +52,8 @@ namespace InventoryManagement.UI.Produit
                             cbNature.SelectedValue = produit.NatureId ?? -1;                         
                             cbTaxe.Text = produit.Taxe;
                             txtBarCode.Text = produit.BarCode;
-                            txtPurchasePrice.Text = produit.PurchasePrice?.ToString("F2");
-                            txtSalesPrice.Text = produit.SalesPrice?.ToString("F2");
+                            txtPurchasePrice.Text = produit.PurchasePrice?.ToString("F6");
+                            txtSalesPrice.Text = produit.SalesPrice?.ToString("F6");
                             txtStock.Text = produit.StockQuantity?.ToString("F2");
                             txtAlertQty.Text = produit.QtyAlert?.ToString("F2");
                             txtColisage.Text = produit.Colisage?.ToString();
@@ -89,7 +89,7 @@ namespace InventoryManagement.UI.Produit
             dgvPriceLists.Rows.Clear();
             foreach (var price in priceLists)
             {
-                dgvPriceLists.Rows.Add(price.Name, price.Price?.ToString("F2"));
+                dgvPriceLists.Rows.Add(price.Name, price.Price?.ToString("F6"));
             }
         }
 

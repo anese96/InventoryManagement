@@ -56,7 +56,7 @@ namespace InventoryManagement.Repositorys
                 PhoneNumber = entity.PhoneNumber,
                 Address = entity.Address,
                 Remark=entity.Remark,
-                Balance = 0,
+                Balance = entity.Balance,
                 Turnover = 0
            };
             await _appContext.Customers.AddAsync(client);

@@ -103,7 +103,7 @@ namespace InventoryManagement.UI.Achat
                 Remise = v.Remise,
                 Total_TTC = v.TotalPurchase,
                 Montant_Payé = v.PaymentPurchase
-            }).ToList();
+            }).OrderByDescending(v => v.Date).ToList();
 
             helper.SetData(salesInvoices);
             if (dvgVentes.Columns["ID"] != null) dvgVentes.Columns["ID"].Visible = false;

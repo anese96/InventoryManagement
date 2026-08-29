@@ -170,10 +170,11 @@ namespace InventoryManagement.UI
             btnCounterSales.Padding = new Padding(20, 0, 0, 0);
             btnCounterSales.Size = new Size(229, 60);
             btnCounterSales.TabIndex = 9;
-            btnCounterSales.Text = "   🏪 Ventes Comptoir";
+            btnCounterSales.Text = "   🏪 Caisses";
             btnCounterSales.TextAlign = ContentAlignment.MiddleLeft;
             btnCounterSales.TextImageRelation = TextImageRelation.ImageBeforeText;
             btnCounterSales.UseVisualStyleBackColor = true;
+            btnCounterSales.Click += btnCounterSales_Click;
             // 
             // btnSalesReturns
             // 

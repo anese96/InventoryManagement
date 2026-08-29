@@ -503,7 +503,7 @@ namespace InventoryManagement.UI
                     {
                         if (decimal.TryParse(row.Cells["Tarification"].Value.ToString(), out decimal p))
                         {
-                            row.Cells["Prix"].Value = p.ToString("N2");
+                            row.Cells["Prix"].Value = p.ToString("N6");
                         }
                     }
                 }
@@ -536,7 +536,7 @@ namespace InventoryManagement.UI
                     }
                     catch { }
 
-                    row.Cells["Prix"].Value = product.SalesPrice?.ToString("N2") ?? "0.00";
+                    row.Cells["Prix"].Value = product.SalesPrice?.ToString("N6") ?? "0.000000";
                     row.Cells["TVA"].Value = product.Taxe.ToString();
                     row.Cells["Qte"].Value = "1";
 
@@ -647,7 +647,7 @@ namespace InventoryManagement.UI
                 Size = new Size(fieldW, 25),
                 Location = new Point(20 + labelW, yPos),
                 Maximum = 99999999999999,
-                DecimalPlaces = 2,
+                DecimalPlaces = 6,
                 ThousandsSeparator = true
             };
             parent.Controls.Add(numericUpDown);
@@ -697,7 +697,7 @@ namespace InventoryManagement.UI
                 Size = new Size(fieldW, 25),
                 Location = new Point(xPos + labelW, yPos),
                 Maximum = 99999999999999,
-                DecimalPlaces = 2,
+                DecimalPlaces = 6,
                 ThousandsSeparator = true
             };
             parent.Controls.Add(numericUpDown);
@@ -748,7 +748,7 @@ namespace InventoryManagement.UI
             {
                 decimal qte = decimal.TryParse(row.Cells["Qte"].Value.ToString(), out var q) ? q : 0;
                 decimal prix = decimal.TryParse(row.Cells["Prix"].Value.ToString(), out var p) ? p : 0;
-                row.Cells["TotalHT"].Value = (qte * prix).ToString("N2");
+                row.Cells["TotalHT"].Value = (qte * prix).ToString("N6");
             }
         }
         private void CalculateQteFromPack(int rowIndex)

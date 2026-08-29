@@ -17,7 +17,7 @@ namespace InventoryManagement.UI.Client
         private readonly IService<ClientDto> _service;
         private readonly FunctionUI _functionUI;
 
-        private TextBox txtReference, txtNom, txtTelephone, txtAdresse, txtRemarque;
+        private TextBox txtReference, txtNom, txtTelephone, txtAdresse, txtRemarque , txtBalance;
         public AjouterClient(FunctionUI functionUI , IService<ClientDto> service)
         {
             InitializeComponent();
@@ -80,6 +80,7 @@ namespace InventoryManagement.UI.Client
             _functionUI.AddFormField(formPanel, "Référence :", lblW, fldW, 30, spc, out txtReference, "", "", false);
             txtReference.Text = "CL-" + DateTime.Now.ToString("HHmmss");
             _functionUI.AddFormField(formPanel, "Nom :", lblW, fldW, 30, spc, out txtNom, "", "", false);
+            _functionUI.AddFormField(formPanel, "Solde Initial :", lblW, fldW, 30, spc, out txtBalance, "N2", "0.00");
             _functionUI.AddFormField(formPanel, "N° Téléphone :", lblW, fldW, 30, spc, out txtTelephone, "", "", false);
             _functionUI.AddFormField(formPanel, "Adresse :", lblW, fldW, 30, spc, out txtAdresse, "", "", false);
             _functionUI.AddFormField(formPanel, "Remarque :", lblW, fldW, 30, spc, out txtRemarque, "", "", false);
@@ -135,6 +136,7 @@ namespace InventoryManagement.UI.Client
                     PhoneNumber = txtTelephone.Text.Trim(),
                     Address = txtAdresse.Text.Trim(),
                     Remark = txtRemarque.Text.Trim(),
+                    Balance=Convert.ToDecimal(txtBalance.Text.Trim()),
                 };
                 await _service.AddAsync(clientDto);
               

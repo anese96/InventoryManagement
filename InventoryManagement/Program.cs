@@ -103,6 +103,7 @@ namespace InventoryManagement
             services.AddSingleton<FunctionUI>();
             services.AddTransient<ProduitRepository>();
             services.AddTransient<ClientService>();           
+            services.AddTransient<CratesRepository>();           
             services.AddTransient<ClientRepository>();
             services.AddTransient<VendorService>();
             services.AddTransient<VendorRepository>();
