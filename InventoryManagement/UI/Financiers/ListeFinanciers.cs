@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InventoryManagement.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,11 +13,15 @@ namespace InventoryManagement.UI.Financiers
 {
     public partial class ListeFinanciers : Form
     {
-        private readonly FunctionUI _functionUI;
-        public ListeFinanciers(FunctionUI functionUI)
+        DataGridHelper helper;
+        private readonly IFormManager _formFactory;
+        private DataGridView dgvClients;
+        private readonly AppDbContext _appContext;
+        public ListeFinanciers(IFormManager formManager, AppDbContext appContext)
         {
             InitializeComponent();
-            _functionUI = functionUI;
+            _formFactory = formManager;
+            _appContext = appContext;
         }
     }
 }

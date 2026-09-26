@@ -2,6 +2,7 @@
 using InventoryManagement.Data.DTO;
 using InventoryManagement.Data.Models;
 using InventoryManagement.InterfacesServices;
+using InventoryManagement.Repositorys;
 using InventoryManagement.Services;
 using InventoryManagement.UI.Client;
 using System;
@@ -20,16 +21,17 @@ namespace InventoryManagement.UI.Fournisseur
         private readonly IService<PaymentVendorDto> _service;
         private int _idVendor;
         private readonly VendorService _vendorService;
+        private readonly CratesRepository _cratesRepository;
         public AjouterPaymentFournisseur(int idVendor, FunctionUI functionUI, IService<PaymentVendorDto> service,
-            AppDbContext appDbContext, VendorService vendorService)
-            : base(idVendor, functionUI, null, appDbContext, null)
+            AppDbContext appDbContext, VendorService vendorService, CratesRepository cratesRepository)
+            : base(idVendor, functionUI, null, appDbContext, null, cratesRepository)
         {
                 _idVendor = idVendor;
                 _functionUI = functionUI;
                 _service = service;
                 _appContext = appDbContext;
-            _vendorService = vendorService;
-
+                _vendorService = vendorService;
+            _cratesRepository = cratesRepository;
         }
 
         public override async void BtnSave_Click(object? sender, EventArgs e)
@@ -46,7 +48,7 @@ namespace InventoryManagement.UI.Fournisseur
                 };
                 await _service.AddAsync(paymentvendorDto);
                 await _vendorService.UpdateBalanceAsync(_idVendor, -(paymentvendorDto.Payment.Value));
-
+                await _cratesRepository.AddMoney((int)cbCaisse.SelectedValue, -(decimal.Parse(txtAmount.Text.Trim())));
                 MessageBox.Show("Payment ajouté avec succès");
                 this.DialogResult = DialogResult.OK;
             }
